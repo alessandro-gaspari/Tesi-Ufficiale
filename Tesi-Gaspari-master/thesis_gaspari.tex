@@ -1,0 +1,156 @@
+\def\thudbabelopt{english,italian}
+
+\documentclass[target=bach,aauheader=,style=]{thud}
+
+\course{Internet of Things, Big Data, Machine Learning}
+
+\title{Sviluppo di un sistema per il monitoraggio di sensori per atleti}
+\author{Alessandro Gaspari}
+\supervisor{Prof.\ Ivan Scagnetto}
+\tutor{Ivan Scagnetto}
+
+
+
+\usepackage[a-1b]{pdfx}
+\usepackage[pdfa]{hyperref}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{subcaption}
+
+
+\begin{document}
+\maketitle
+
+\begin{dedication}
+    Dedica da scrivere.
+
+\end{dedication}
+
+\acknowledgements
+Ringraziamenti da scrivere.
+
+
+%% Indice
+\tableofcontents
+
+%% Lista delle tabelle (se presenti)
+%\listoftables
+
+\listoffigures
+
+%% Corpo principale del documento
+\mainmatter
+
+%% Parte
+%% La suddivisione in parti è opzionale; solitamente sono sufficienti i capitoli.
+%\part{Parte}
+
+%% Capitolo
+\chapter{Introduzione}
+
+%% Sezione
+\section{Ambito}
+Negli ultimi anni, la raccolta dati tramite sensori IMU\footnote{Per IMU si intendono sensori che integrano internamente tre dispositivi di acquisizione attivi sugli assi $x$, $y$, $z$.} indossati da atleti ha subito una trasformazione significativa grazie all’evoluzione tecnologica dei microcontrollori e dei protocolli di comunicazione wireless, rendendo la misurazione dei parametri biomeccanici\footnote{I parametri biomeccanici sono delle misure usate per analizzare ed ottimizzare il movimento e la postura dell'atleta.} sempre più precisa, efficiente e integrabile in applicazioni di sensoristica avanzata. Questo progresso ha reso possibile una comprensione più approfondita dei movimenti corporei, aprendo la strada a sistemi di monitoraggio sofisticati che possono supportare allenatori, fisioterapisti e atleti nel miglioramento delle performance e nella prevenzione degli infortuni.
+
+Questo progetto si colloca nell'ambito del monitoraggio sensoristico applicato al mondo dello sport, con particolare attenzione sia al tracciamento in tempo reale che all’analisi in differita dei dati raccolti. L'obiettivo è studiare in dettaglio i movimenti degli arti inferiori dell’atleta, analizzando con particolre attenzione:
+\begin{itemize}
+    \item Movimenti sugli assi $x$, $y$, $z$ del ginocchio, per valutare flessibilità articolare e prevenire infortuni
+    \item Movimenti sugli assi $x$, $y$, $z$ della tibia, per analizzare l’efficienza della falcata\footnote{Per falcata si intende il movimento di una gamba tra un appoggio al terreno e il successivo.} e la distribuzione delle forze  
+    \item Pressioni plantari laterali, frontali e posteriori, utili per identificare squilibri posturali e ottimizzare la tecnica dell’atleta
+\end{itemize}
+
+Gli sport presi come riferimento sono il pattinaggio e la corsa, attività caratterizzate da movimenti complessi e intensi, che permettono la raccolta di numerosi dati in tempi relativamente brevi. L’analisi dei dati raccolti consente di ottenere metriche precise e affidabili, confrontabili tra atleti o sessioni differenti, fornendo così una base solida per valutazioni tecniche e studi comparativi tra varie attività dello stesso atleta o tra atleti con diversi livelli di abilità.
+
+\section{Obiettivi}
+Gli obiettivi principali del progetto sono:
+
+\begin{enumerate}
+    \item L'implementazione di un'applicazione mobile user-friendly\footnote{Con il termine user-friendly si intende un'interfaccia facile da utilizzare e intuitiva.} che consenta la profilazione dell'atleta, la connessione dei sensori e l'avvio (con il conseguente arresto) del tracciamento delle attività, con particolare attenzione alla facilità d’uso anche per utenti non esperti.
+    \item Lo sviluppo di un sistema di memorizzazione sicuro e remoto, che garantisca la registrazione completa dei dati raccolti dai sensori, evitando la perdita di informazioni o conflitti tra dispositivi.
+    \item La creazione di una dashboard\footnote{Con l'espressione dashboard si indica un'interfaccia grafica che mostra i dati in modo chiaro.} web reattiva che consenta la visualizzazione dei dati in tempo reale durante l’attività, o in differita tramite funzionalità di replay, rendendo immediata la comprensione delle performance e la possibilità di effettuare confronti tra diverse sessioni.
+\end{enumerate}
+
+Questi obiettivi non solo mirano a garantire il corretto funzionamento tecnico del sistema, ma anche a fornire strumenti utili per l’analisi avanzata delle performance, con una particolare attenzione all’usabilità e alla fruibilità dei dati.
+
+\section{Risultati}
+I risultati ottenuti confermano la validità delle scelte progettuali. L'applicazione mobile sviluppata è intuitiva e minimalista, permettendo all’atleta di concentrarsi sull’attività senza distrazioni. Il sistema di memorizzazione remoto assicura la registrazione completa e sicura dei dati, eliminando errori come lo scambio di nomi tra sensori o la perdita di informazioni. La dashboard web offre una rappresentazione chiara e fluida dei dati, consentendo agli utenti di monitorare performance e progressi in tempo reale, oppure di rivedere le sessioni passate per analisi dettagliate.
+
+
+\section{Sinossi}
+Questa tesi ha lo scopo di illustrare in dettaglio ogni fase dello sviluppo del sistema di monitoraggio proposto. Nei capitoli successivi, verrà esposto il problema principale affrontato con un confronto tra le soluzioni attualmente disponibili sul mercato, per poi proseguire con i requisiti tecnici e funzionali necessari allo sviluppo e le scelte progettuali implementate. Successivamente saranno inoltre trattati gli aspetti legati all’integrazione dei sensori, all’architettura dell’applicazione mobile e della dashboard web, con porzioni di codice opportunamente commentate, per comprendere al meglio le scelte progettuali attuate, e screenshot per mostrare i diversi casi d’uso. Infine, si presenteranno i risultati ottenuti, le possibili limitazioni e le opportunità di miglioramento e ottimizzazione del sistema per futuri sviluppi.
+
+\chapter{Il problema}
+\section{Esposizione del problema}
+Nel contesto dell'attività sportiva moderna, l'analisi dei movimenti degli atleti risulta ormai indispensabile per correggere e migliorare notevolmente le abilità dell'agonista o dell'amatore. La raccolta dati tramite dispositivi di sensoristica sempre più avanzati, evidenzia quanto sia effettivamente critico il monitoraggio per evitare infortuni e per migliorare le performance.
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.48\textwidth]{assets/PercentualeAdozione.png} &
+\includegraphics[width=0.48\textwidth]{assets/GraficoMaratone.png} \\
+(a) Adozione di sensori fra atleti & (b) Tempi mediani di arrivo nelle maratone
+\end{tabular}
+\caption{Confronto fra adozione di sensori wearables e performance nelle maratone.}
+\label{fig:tabular}
+\end{figure}
+
+Come possiamo osservare a sinistra della figura \ref{fig:tabular}, all'inizio del 2010, gli sportivi, agonisti e non, che utilizzavano nei loro allenamenti dei sensori indossabili erano una piccolissima porzione rispetto al resto. Infatti si parla di solamente un 2\% secondo una stima basata su un'analisi di mercato dei fitness tracker in Nord America\cite{fortune2025wearables} e un'altra analisi di mercato in tutto il mondo\cite{grandview2024}.
+Cinque anni dopo, nel 2015, si è osservato un incremento significativo nell'adozione dei sensori wearables, secondo anche un utile sondaggio tenuto sugli allenatori americani\cite{luczak2020coaches}. Nel 2020 avvenne l'incremento più sostanzioso, portando più della metà degli atleti a utilizzare sensori durante i loro allenamenti per migliorare le prestazione ed evitare infortuni dovuti a scorretti movimenti o appoggi. Ad oggi si stima che circa l'85\% di tutti gli atleti mondiali utilizzino sensori wearables per il monitoraggio avanzato durante le loro attività. \par
+Proseguendo con l'analisi del secondo grafico, generato utilizzando i dati del World Athletics Database\cite{camminady2023wa}\footnote{Il World Athletics Database è una collezione di dati presente su GitHub con numerosi risultati di varie discipline sportive riguardanti l'atletica} possiamo invece notare come negli anni, sempre partendo dal 2010 e arrivando ad oggi, i tempi mediani con cui i maratoneti portavano a termine la loro corsa sono diminuti considerevolmente, partendo da all'incirca 129 minuti, arrivando a 127 negli ultimi anni, delineando un trend decrescente, che ci indica dunque come gli atleti riescano a mantenere una velocità più alta durante tutta la maratona, permettendogli di ottenere delle performance ottimali\footnote{Il picco negativo registrato nel 2020, è dovuto all'annullamento della maggior parte delle gare a causa del Covid-19, permettendo solo a professionisti di altissimo livello, la partecipazione ad una scarsa quantità di eventi}. L'analisi della maratona risulta migliore per comprendere al meglio quanto sia effettivamente efficace l'utilizzo dei sensori wearable durante gli allenamenti rispetto all'analisi di una corsa più breve, essendo che in un tratto di pista maggiore, l'atleta dovrà sforzarsi per più tempo a mantenere una postura corretta, un appoggio del piede costantentemente equlibrato e un movimento delle articolazioni coordinato, che gli permetterà dunque di accumulare vantaggio data la lunga durata della gara. Questo miglioramento di performance risulterebbe minimo se non nullo in una gara così breve come i cento metri ad esempio, la cui ridotta lunghezza non consentirebbe all'atleta di accumulare vantaggio correggendo costantemente i suoi errori. L'altro vantaggio molto importante da considerare è sicuramente quello della prevenzione infortuni. In molti sport infatti, per sovraccarichi muscolari o appoggi squilibrati, si vanno a generare delle lesioni talvolta anche molto gravi negli atleti, costretti poi a dover intraprendere un percorso di riabilitazione. Secondo uno studio\cite{barca_innovationhub_2025} tenuto dal centro medico sportivo del famoso club calcistico Barcellona però, l'integrazione di dati biometrici e fisici raccolti attraverso sensori wearable, riescono ad anticipare e predire segnali di rischio infortunio, evitando così che l'atleta possa farsi del male, compromettendo la sua salute.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/InfortuniBarcellona.png}
+    \caption{Infortuni stagionali del Barcellona FC pre e post adozione di sensori}
+    \label{Infortuni_Barcellona}
+    
+\end{figure}
+
+Questo viene anche confermato dal grafico in figura \ref{Infortuni_Barcellona}, costruito basandosi sul dataset di Transfermarkt\cite{transfermarkt2023injuries}. Analizzando il grafico infatti notiamo come nel 2021, nel Barcellona si fosse registrato il maggior numero di infortuni per stagione. A seguito dell'adozione di sensoristica moderna e allenamenti mirati alla prevenzione di infortuni, come citato dal Barça Innovation Hub\cite{barca2021wearables}, il numero di infortuni diminuì notevolmente, rendendo profittevole l'investimento sulla sensoristica. Un altro importante studio
+tenuto da Preatoni Ezio\cite{preatoni2022wearables} evidenzia come le tecnologie sensoristiche indossabili (e.g. accelerometri o giroscopi) riescano a registrare dei dati che consentano la successiva identificazione di alterazioni di movimento o di carichi di lavoro, associati al rischio di infortunio. 
+Anche il pattinaggio su pista risulta uno sport molto interessante da analizzare pre e post monitoraggio sensoristico. Infatti esistono molti parametri catturabili da sensori indossabili che riescono a decretare con precisione se un atleta è un professionista o un amatore nel pattinaggio, come per esempio la percentuale di accelerazione laterale della tibia rispetto a quella totale. Questo indice, ideato dalla Dottoressa Giulia Bongiorno, prende per l'appunto il nome di Bongiorno Index. Come citato nello studio\cite{article} della Dottoressa infatti, un'elevata accelerazione laterale rispetto a quella totale, affermerà un'abilità maggiore dell'atleta, capace di gestire in maniera più efficiente e controllata la falcata.
+Un altro dato molto importante per decretare l'abilità di un atleta è la valutazione delle sue pressioni plantari, tramite la quale si può intuire quanto l'individuo esaminato sbilanci il piede lateralmente o posteriormente.
+
+Per poter però eseguire le attività di monitoraggio e analisi dei dati registrati dai sensori, si necessita di un sistema efficace e reattivo, facilmente utilizzabile dall'atleta. I sistemi generalmente richiesti per questi tipi di monitoraggi necessitano di:
+\begin{itemize}
+   \item Un'applicazione installata sul dispositivo mobile mantenuto dall'atleta durante l'attività per abilitare la connessione ai sensori e l'avvio delle registrazioni.
+   \item Una dashboard web che proceda all'elaborazione dei numerosi dati ricevuti, per permetter al soggetto analizzante di controllare tutti i parametri di interesse, in aggiunta alla posizione GPS del dispositivo mantenuto dall'atleta.
+\end{itemize}
+
+
+\section{Stato dell'arte}
+bla bla bla 
+
+\section{Sviluppo ad-hoc}
+\subsection{Analisi dei requisiti}
+\subsection{Casi di studio}
+\subsection{Modello di sviluppo}
+\subsection{Architettura della soluzione}
+\subsection{Caratteristiche tecniche}
+
+
+
+
+%% Fine dei capitoli normali, inizio dei capitoli-appendice (opzionali)
+\appendix
+
+%\part{Appendici}
+
+\chapter{Titolo della prima appendice}
+Sed purus libero, vestibulum ut nibh vitae, mollis ultricies augue. Pellentesque velit libero, tempor sed pulvinar non, fermentum eu leo. Duis posuere eleifend nulla eget sagittis. Nam laoreet accumsan rutrum. Interdum et malesuada fames ac ante ipsum primis in faucibus. Curabitur eget libero quis leo porttitor vehicula eget nec odio. Proin euismod interdum ligula non ultricies. Maecenas sit amet accumsan sapien.
+
+%% Parte conclusiva del documento; tipicamente per riassunto, bibliografia e/o indice analitico.
+\backmatter
+
+%% Riassunto (opzionale)
+%\summary
+%Maecenas tempor elit sed arcu commodo, dapibus sagittis leo egestas. Praesent at ultrices urna. Integer et nibh in augue mollis facilisis sit amet eget magna. Fusce at porttitor sapien. Phasellus imperdiet, felis et molestie vulputate, mauris sapien tincidunt justo, in lacinia velit nisi nec ipsum. Duis elementum pharetra lorem, ut pellentesque nulla congue et. Sed eu venenatis tellus, pharetra cursus felis. Sed et luctus nunc. Aenean commodo, neque a aliquam bibendum, mauris augue fringilla justo, et scelerisque odio mi sit amet diam. Nulla at placerat nibh, nec rutrum urna. Donec ut egestas magna. Aliquam erat volutpat. Phasellus vestibulum justo sed purus mattis, vitae lacinia magna viverra. Nulla rutrum diam dui, vel semper mi mattis ac. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Donec id vestibulum lectus, eget tristique est.
+
+%% Bibliografia (praticamente obbligatoria)
+\bibliographystyle{plain_\languagename}%% Carica l'omonimo file .bst, dove \languagename è la lingua attiva.
+%% Nel caso in cui si usi un file .bib (consigliato)
+\bibliography{thud}
+%% Nel caso di bibliografia manuale, usare l'environment thebibliography.
+
+%% Per l'indice analitico, usare il pacchetto makeidx (o analogo).
+
+\end{document}
