@@ -52,7 +52,8 @@ Ringraziamenti da scrivere.
 \section{Ambito}
 Negli ultimi anni, la raccolta dati tramite sensori IMU\footnote{Per IMU si intendono sensori che integrano internamente tre dispositivi di acquisizione attivi sugli assi $x$, $y$, $z$.} indossati da atleti ha subito una trasformazione significativa grazie all’evoluzione tecnologica dei microcontrollori e dei protocolli di comunicazione wireless, rendendo la misurazione dei parametri biomeccanici\footnote{I parametri biomeccanici sono delle misure usate per analizzare ed ottimizzare il movimento e la postura dell'atleta.} sempre più precisa, efficiente e integrabile in applicazioni di sensoristica avanzata. Questo progresso ha reso possibile una comprensione più approfondita dei movimenti corporei, aprendo la strada a sistemi di monitoraggio sofisticati che possono supportare allenatori, fisioterapisti e atleti nel miglioramento delle performance e nella prevenzione degli infortuni.
 
-Questo progetto si colloca nell'ambito del monitoraggio sensoristico applicato al mondo dello sport, con particolare attenzione sia al tracciamento in tempo reale che all’analisi in differita dei dati raccolti. L'obiettivo è studiare in dettaglio i movimenti degli arti inferiori dell’atleta, analizzando con particolre attenzione:
+Questo progetto si colloca nell'ambito del monitoraggio sensoristico applicato al mondo dello sport, con particolare attenzione sia al tracciamento in tempo reale che all’analisi in differita dei dati raccolti. L'obiettivo è studiare in dettaglio i movimenti degli arti inferiori dell’atleta, analizzando in modo approfondito:
+
 \begin{itemize}
     \item Movimenti sugli assi $x$, $y$, $z$ del ginocchio, per valutare flessibilità articolare e prevenire infortuni
     \item Movimenti sugli assi $x$, $y$, $z$ della tibia, per analizzare l’efficienza della falcata\footnote{Per falcata si intende il movimento di una gamba tra un appoggio al terreno e il successivo.} e la distribuzione delle forze  
@@ -60,7 +61,6 @@ Questo progetto si colloca nell'ambito del monitoraggio sensoristico applicato a
 \end{itemize}
 
 Gli sport presi come riferimento sono il pattinaggio e la corsa, attività caratterizzate da movimenti complessi e intensi, che permettono la raccolta di numerosi dati in tempi relativamente brevi. L’analisi dei dati raccolti consente di ottenere metriche precise e affidabili, confrontabili tra atleti o sessioni differenti, fornendo così una base solida per valutazioni tecniche e studi comparativi tra varie attività dello stesso atleta o tra atleti con diversi livelli di abilità.
-
 \section{Obiettivi}
 Gli obiettivi principali del progetto sono:
 
@@ -71,14 +71,10 @@ Gli obiettivi principali del progetto sono:
 \end{enumerate}
 
 Questi obiettivi non solo mirano a garantire il corretto funzionamento tecnico del sistema, ma anche a fornire strumenti utili per l’analisi avanzata delle performance, con una particolare attenzione all’usabilità e alla fruibilità dei dati.
-
 \section{Risultati}
 I risultati ottenuti confermano la validità delle scelte progettuali. L'applicazione mobile sviluppata è intuitiva e minimalista, permettendo all’atleta di concentrarsi sull’attività senza distrazioni. Il sistema di memorizzazione remoto assicura la registrazione completa e sicura dei dati, eliminando errori come lo scambio di nomi tra sensori o la perdita di informazioni. La dashboard web offre una rappresentazione chiara e fluida dei dati, consentendo agli utenti di monitorare performance e progressi in tempo reale, oppure di rivedere le sessioni passate per analisi dettagliate.
-
-
 \section{Sinossi}
 Questa tesi ha lo scopo di illustrare in dettaglio ogni fase dello sviluppo del sistema di monitoraggio proposto. Nei capitoli successivi, verrà esposto il problema principale affrontato con un confronto tra le soluzioni attualmente disponibili sul mercato, per poi proseguire con i requisiti tecnici e funzionali necessari allo sviluppo e le scelte progettuali implementate. Successivamente saranno inoltre trattati gli aspetti legati all’integrazione dei sensori, all’architettura dell’applicazione mobile e della dashboard web, con porzioni di codice opportunamente commentate, per comprendere al meglio le scelte progettuali attuate, e screenshot per mostrare i diversi casi d’uso. Infine, si presenteranno i risultati ottenuti, le possibili limitazioni e le opportunità di miglioramento e ottimizzazione del sistema per futuri sviluppi.
-
 \chapter{Il problema}
 \section{Esposizione del problema}
 Nel contesto dell'attività sportiva moderna, l'analisi dei movimenti degli atleti risulta ormai indispensabile per correggere e migliorare notevolmente le abilità dell'agonista o dell'amatore. La raccolta dati tramite dispositivi di sensoristica sempre più avanzati, evidenzia quanto sia effettivamente critico il monitoraggio per evitare infortuni e per migliorare le performance.
@@ -90,34 +86,35 @@ Nel contesto dell'attività sportiva moderna, l'analisi dei movimenti degli atle
 \includegraphics[width=0.48\textwidth]{assets/GraficoMaratone.png} \\
 (a) Adozione di sensori fra atleti & (b) Tempi mediani di arrivo nelle maratone
 \end{tabular}
-\caption{Confronto fra adozione di sensori wearables e performance nelle maratone.}
+\caption{Confronto fra adozione di sensori wearable e performance nelle maratone.}
 \label{fig:tabular}
 \end{figure}
 
-Come possiamo osservare a sinistra della figura \ref{fig:tabular}, all'inizio del 2010, gli sportivi, agonisti e non, che utilizzavano nei loro allenamenti dei sensori indossabili erano una piccolissima porzione rispetto al resto. Infatti si parla di solamente un 2\% secondo una stima basata su un'analisi di mercato dei fitness tracker in Nord America\cite{fortune2025wearables} e un'altra analisi di mercato in tutto il mondo\cite{grandview2024}.
-Cinque anni dopo, nel 2015, si è osservato un incremento significativo nell'adozione dei sensori wearables, secondo anche un utile sondaggio tenuto sugli allenatori americani\cite{luczak2020coaches}. Nel 2020 avvenne l'incremento più sostanzioso, portando più della metà degli atleti a utilizzare sensori durante i loro allenamenti per migliorare le prestazione ed evitare infortuni dovuti a scorretti movimenti o appoggi. Ad oggi si stima che circa l'85\% di tutti gli atleti mondiali utilizzino sensori wearables per il monitoraggio avanzato durante le loro attività. \par
-Proseguendo con l'analisi del secondo grafico, generato utilizzando i dati del World Athletics Database\cite{camminady2023wa}\footnote{Il World Athletics Database è una collezione di dati presente su GitHub con numerosi risultati di varie discipline sportive riguardanti l'atletica} possiamo invece notare come negli anni, sempre partendo dal 2010 e arrivando ad oggi, i tempi mediani con cui i maratoneti portavano a termine la loro corsa sono diminuiti considerevolmente, partendo da all'incirca 129 minuti, arrivando a 127 negli ultimi anni, delineando un trend decrescente, che ci indica dunque come gli atleti riescano a mantenere una velocità più alta durante tutta la maratona, permettendogli di ottenere delle performance ottimali\footnote{Il picco negativo registrato nel 2020, è dovuto all'annullamento della maggior parte delle gare a causa del Covid-19, permettendo solo a professionisti di altissimo livello, la partecipazione ad una scarsa quantità di eventi}. L'analisi della maratona risulta migliore per comprendere al meglio quanto sia effettivamente efficace l'utilizzo dei sensori wearable durante gli allenamenti rispetto all'analisi di una corsa più breve, essendo che in un tratto di pista maggiore, l'atleta dovrà sforzarsi per più tempo a mantenere una postura corretta, un appoggio del piede costantemente equilibrato e un movimento delle articolazioni coordinato, che gli permetterà dunque di accumulare vantaggio data la lunga durata della gara. Questo miglioramento di performance risulterebbe minimo se non nullo in una gara così breve come i cento metri ad esempio, la cui ridotta lunghezza non consentirebbe all'atleta di accumulare vantaggio correggendo costantemente i suoi errori. L'altro vantaggio molto importante da considerare è sicuramente quello della prevenzione infortuni. In molti sport infatti, per sovraccarichi muscolari o appoggi squilibrati, si vanno a generare delle lesioni talvolta anche molto gravi negli atleti, costretti poi a dover intraprendere un percorso di riabilitazione. Secondo uno studio\cite{barca_innovationhub_2025} tenuto dal centro medico sportivo del famoso club calcistico Barcellona però, l'integrazione di dati biometrici e fisici raccolti attraverso sensori wearable, riescono ad anticipare e predire segnali di rischio infortunio, evitando così che l'atleta possa farsi del male, compromettendo la sua salute.
+Come possiamo osservare a sinistra della figura \ref{fig:tabular}, all'inizio del 2010, gli sportivi, agonisti e non, che utilizzavano nei loro allenamenti dei sensori indossabili erano una piccolissima porzione rispetto al resto. Infatti si parla di solamente un 2\% secondo una stima basata su un'analisi di mercato dei fitness tracker in Nord America \cite{fortune2025wearables} e un'altra analisi di mercato in tutto il mondo \cite{grandview2024}.
+Cinque anni dopo, nel 2015, si è osservato un incremento significativo nell'adozione dei sensori wearable, secondo anche un utile sondaggio tenuto sugli allenatori americani \cite{luczak2020coaches}. Nel 2020 avvenne l'incremento più sostanzioso, portando più della metà degli atleti a utilizzare sensori durante i loro allenamenti per migliorare le prestazioni ed evitare infortuni dovuti a scorretti movimenti o appoggi. Ad oggi si stima che circa l'85\% di tutti gli atleti mondiali utilizzino sensori wearable per il monitoraggio avanzato durante le loro attività.
+
+Proseguendo con l'analisi del secondo grafico, generato utilizzando i dati del World Athletics Database \cite{camminady2023wa}\footnote{Il World Athletics Database è una collezione di dati presente su GitHub con numerosi risultati di varie discipline sportive riguardanti l'atletica} possiamo invece notare come negli anni, sempre partendo dal 2010 e arrivando ad oggi, i tempi mediani con cui i maratoneti portavano a termine la loro corsa sono diminuiti considerevolmente, partendo da all'incirca 129 minuti, arrivando a 127 negli ultimi anni, delineando un trend decrescente, che ci indica dunque come gli atleti riescano a mantenere una velocità più alta durante tutta la maratona, permettendogli di ottenere delle performance ottimali \footnote{Il picco negativo registrato nel 2020, è dovuto all'annullamento della maggior parte delle gare a causa del Covid-19, permettendo solo a professionisti di altissimo livello, la partecipazione ad una scarsa quantità di eventi}. L'analisi della maratona risulta migliore per comprendere al meglio quanto sia effettivamente efficace l'utilizzo dei sensori wearable durante gli allenamenti rispetto all'analisi di una corsa più breve, essendo che in un tratto di pista maggiore, l'atleta dovrà sforzarsi per più tempo a mantenere una postura corretta, un appoggio del piede costantemente equilibrato e un movimento delle articolazioni coordinato, che gli permetterà dunque di accumulare vantaggio data la lunga durata della gara. Questo miglioramento di performance risulterebbe minimo se non nullo in una gara così breve come i cento metri ad esempio, la cui ridotta lunghezza non consentirebbe all'atleta di accumulare vantaggio correggendo costantemente i suoi errori. L'altro vantaggio molto importante da considerare è sicuramente quello della prevenzione infortuni. In molti sport si osserva che, per sovraccarichi muscolari o appoggi squilibrati, si vanno a generare delle lesioni talvolta anche molto gravi negli atleti, costretti poi a dover intraprendere un percorso di riabilitazione. Secondo uno studio \cite{barca_innovationhub_2025} tenuto dal centro medico sportivo del famoso club calcistico Barcellona però, l'integrazione di dati biometrici e fisici raccolti attraverso sensori wearable, riescono ad anticipare e predire segnali di rischio infortunio, evitando così che l'atleta possa farsi del male, compromettendo la sua salute.
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\textwidth]{assets/InfortuniBarcellona.png}
     \caption{Infortuni stagionali del Barcellona FC pre e post adozione di sensori}
-    \label{Infortuni_Barcellona}
-    
+    \label{Infortuni_Barcellona} 
 \end{figure}
 
-Questo viene anche confermato dal grafico in figura \ref{Infortuni_Barcellona}, costruito basandosi sul dataset di Transfermarkt\cite{transfermarkt2023injuries}. Analizzando il grafico infatti notiamo come nel 2021, nel Barcellona si fosse registrato il maggior numero di infortuni per stagione. A seguito dell'adozione di sensoristica moderna e allenamenti mirati alla prevenzione di infortuni, come citato dal Barça Innovation Hub\cite{barca2021wearables}, il numero di infortuni diminuì notevolmente, rendendo profittevole l'investimento sulla sensoristica. Un altro importante studio
-tenuto da Preatoni Ezio\cite{preatoni2022wearables} evidenzia come le tecnologie sensoristiche indossabili (e.g. accelerometri o giroscopi) riescano a registrare dei dati che consentano la successiva identificazione di alterazioni di movimento o di carichi di lavoro, associati al rischio di infortunio. 
-Anche il pattinaggio su pista risulta uno sport molto interessante da analizzare pre e post monitoraggio sensoristico. Infatti esistono molti parametri catturabili da sensori indossabili che riescono a decretare con precisione se un atleta è un professionista o un amatore nel pattinaggio, come per esempio la percentuale di accelerazione laterale della tibia rispetto a quella totale. Questo indice, ideato dalla Dottoressa Giulia Bongiorno, prende per l'appunto il nome di Bongiorno Index. Come citato nello studio\cite{article} della Dottoressa infatti, un'elevata accelerazione laterale rispetto a quella totale, affermerà un'abilità maggiore dell'atleta, capace di gestire in maniera più efficiente e controllata la falcata.
+Questo viene anche confermato dal grafico in figura \ref{Infortuni_Barcellona}, costruito basandosi sul dataset di Transfermarkt \cite{transfermarkt2023injuries}. Analizzando il grafico, notiamo come nel 2021, nel Barcellona si fosse registrato il maggior numero di infortuni per stagione. A seguito dell'adozione di sensoristica moderna e allenamenti mirati alla prevenzione di infortuni, come citato dal Barça Innovation Hub \cite{barca2021wearables}, il numero di infortuni diminuì notevolmente, rendendo profittevole l'investimento sulla sensoristica. Un altro importante studio
+tenuto da Preatoni Ezio \cite{preatoni2022wearables} evidenzia come le tecnologie sensoristiche indossabili (e.g. accelerometri o giroscopi) riescano a registrare dei dati che consentano la successiva identificazione di alterazioni di movimento o di carichi di lavoro, associati al rischio di infortunio. 
+Anche il pattinaggio su pista risulta uno sport molto interessante da analizzare pre e post monitoraggio sensoristico. Infatti esistono molti parametri catturabili da sensori indossabili che riescono a decretare con precisione se un atleta è un professionista o un amatore nel pattinaggio, come per esempio la percentuale di accelerazione laterale della tibia rispetto a quella totale. Questo indice, ideato dalla Dottoressa Giulia Bongiorno, prende per l'appunto il nome di Bongiorno Index. Come citato nello studio \cite{article} della Dottoressa, un'elevata accelerazione laterale rispetto a quella totale, affermerà un'abilità maggiore dell'atleta, capace di gestire in maniera più efficiente e controllata la falcata.
 Un altro dato molto importante per decretare l'abilità di un atleta è la valutazione delle sue pressioni plantari, tramite la quale si può intuire quanto l'individuo esaminato sbilanci il piede lateralmente o posteriormente.
-
 Per poter però eseguire le attività di monitoraggio e analisi dei dati registrati dai sensori, si necessita di un sistema efficace e reattivo, facilmente utilizzabile dall'atleta. I sistemi generalmente richiesti per questi tipi di monitoraggi necessitano di:
+
 \begin{itemize}
    \item Un'applicazione installata sul dispositivo mobile mantenuto dall'atleta durante l'attività per abilitare la connessione ai sensori e l'avvio delle registrazioni.
-   \item Una dashboard web che proceda all'elaborazione dei numerosi dati ricevuti, per permetter al soggetto analizzante di controllare tutti i parametri di interesse, in aggiunta alla posizione GPS del dispositivo mantenuto dall'atleta.
+   \item Una dashboard web che proceda all'elaborazione dei numerosi dati ricevuti, per permettere al soggetto analizzante di controllare tutti i parametri di interesse, in aggiunta alla posizione GPS del dispositivo mantenuto dall'atleta.
 \end{itemize}
 
-
 \section{Stato dell'arte}
+\label{statoarte}
 Attualmente sul mercato si trovano diversi tipi di applicazioni mobili che permettono il monitoraggio tramite sensoristica avanzata. Una delle più importanti da citare è sicuramente \textit{Sensoria Run} e \textit{Sensoria Lab}. Tramite queste due applicazioni scaricabili dai vari app store, ci si può connettere ai dispositivi Sensoria per effettuare l'abbinamento ad essi e successivamente avviare il tracciamento. Sensoria attualmente offre una vasta gamma di sensori compatibili con l'app, quali:
 
 \begin{itemize}
@@ -133,10 +130,9 @@ Attualmente sul mercato si trovano diversi tipi di applicazioni mobili che perme
     \includegraphics[width=1\textwidth]{assets/sensoriasensori.png}
     \caption{Vari dispositivi indossabili del marchio Sensoria.}
     \label{SensoriSensoria}
-    
 \end{figure}
 
-Una volta connessi i dispositivi desiderati e avviata l'attività desiderata che si è scelta tra le tante, verranno visualizzati sullo schermo vari dati utili all'atleta, osservabili anche dopo aver terminato l'attività. Infatti nell'app Sensoria Run vi è una schermata di archivio (a sinistra della figura \ref{SchermateSensoria}) tramite la quale è possibile riguardare ciascuna attività osservando grafici statici sulle performance dell'atleta durante il monitoraggio, in aggiunta a delle statistiche calcolate in media su tutto il percorso. Dalla dashboard web di Sensoria invece si può osservare il percorso effettuato su una mini mappa, con informazioni aggiuntive sul percorso, come dati sull'appoggio del piede, oppure informazioni su miglioramenti o peggioramenti nel tempo impiegato per compiere un determinato percorso già registrato in precedenza
+Una volta connessi i dispositivi desiderati e avviata l'attività desiderata che si è scelta tra le tante, verranno visualizzati sullo schermo vari dati utili all'atleta, osservabili anche dopo aver terminato l'attività. Difatti nell'app Sensoria Run vi è una schermata di archivio (a sinistra della figura \ref{SchermateSensoria}) tramite la quale è possibile riguardare ciascuna attività osservando grafici statici sulle performance dell'atleta durante il monitoraggio, in aggiunta a delle statistiche calcolate in media su tutto il percorso. Dalla dashboard web di Sensoria invece si può osservare il percorso effettuato su una mini mappa, con informazioni aggiuntive sul percorso, come dati sull'appoggio del piede, oppure informazioni su miglioramenti o peggioramenti nel tempo impiegato per compiere un determinato percorso già registrato in precedenza.
 
 \begin{figure}[htbp]
 \centering
@@ -149,8 +145,43 @@ Una volta connessi i dispositivi desiderati e avviata l'attività desiderata che
 \label{SchermateSensoria}
 \end{figure}
 
-Tutte queste informazioni consultabili rendono il monitoraggio utile, dando la possibilità di correggere eventuali carichi troppo alti sulle articolazioni o appoggi squilibrati semplicemente osservando i grafici e le statistiche. Un'ulteriore dato molto importante, anche per la sicurezza dell'atleta, è il monitoraggio del battito cardiaco, infatti, osservando le variazioni di esso potremo notare eventuali anomalie (come battito troppo elevato o troppo basso) che potrebbero indicare problemi cardiaci nell'atleta.  
-Tramite l'altra applicazione ideata dagli sviluppatori di Sensoria, ossia Sensoria Lab, pensata principalmente per chi si occuperà dell'analisi approfondita dei dati (ricercatori, sviluppatori...), si potranno analizzare tutti i dati raw\footnote{I dati raw (o dati grezzi) sono l'insieme delle informazioni acquisite dai sensori non sottoposte ad alcun processo di filtraggio per la normalizzazione, mostrando il dato così come viene registrato.} ricevuti dai vari sensori, verificandone il corretto funzionamento e rendendo possibile un'analisi ancora più approfondita dei dati. Per poter però utilizzare Sensoria Lab, l'applicazione richiede l'acquisto dell'Software Development Kit\footnote{L'SDK è un pacchetto di strumenti per sviluppatori e ricercatori che utilizza le librerie ufficiali del produttore per integrare e raccogliere dati.} alla cifra di 999\$ l'anno per utente. 
+Tutte queste informazioni consultabili rendono il monitoraggio utile, dando la possibilità di correggere eventuali carichi troppo alti sulle articolazioni o appoggi squilibrati semplicemente osservando i grafici e le statistiche. Un'ulteriore dato molto importante, anche per la sicurezza dell'atleta, è il monitoraggio del battito cardiaco, infatti, osservando le variazioni di esso è possibile accorgersi di eventuali anomalie (come battito troppo elevato o troppo basso) che potrebbero indicare problemi cardiaci nell'atleta.  
+Tramite l'altra applicazione ideata dagli sviluppatori di Sensoria, ossia Sensoria Lab, pensata principalmente per chi si occuperà dell'analisi approfondita dei dati (ricercatori, sviluppatori...), si potranno analizzare tutti i dati raw\footnote{I dati raw (o dati grezzi) sono l'insieme delle informazioni acquisite dai sensori non sottoposte ad alcun processo di filtraggio per la normalizzazione, mostrando il dato così come viene registrato.} ricevuti dai vari sensori, verificandone il corretto funzionamento e rendendo possibile un'analisi ancora più approfondita dei dati. Per poter però utilizzare Sensoria Lab, l'applicazione richiede l'acquisto dell'Software Development Kit\footnote{L'SDK è un pacchetto di strumenti per sviluppatori e ricercatori che utilizza le librerie ufficiali del produttore per integrare e raccogliere dati.} alla cifra di 999\$ l'anno per utente.
+
+Un altro importante prodotto sul mercato delle applicazioni per sensori, è sicuramente \textit{Coospo Ride}. Questa app, incentrata sull'analisi della velocità dell'atleta e del suo battito cardiaco, permette di collegarsi ai dispositivo Coospo per poter poi procedere al monitoraggio. In questo caso i sensori sono meno complessi di quelli marchiati Sensoria, essendo che prevalentemente si tratta di cardio-frequenzimetri talvolta combinati a sensori GPS per il tracciamento delle varie statistiche derivate dalla velocità.
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.22\textwidth]{assets/coospohw.png} &
+\includegraphics[width=0.22\textwidth]{assets/coospobici.png} \\
+(a) Fascia da polso Coospo HW807 & (b) Ciclocomputer Coospo BC107
+\end{tabular}
+\caption{Vari sensori per atleti del marchio Coospo.}
+\label{SensoriCoospo}
+\end{figure}
+
+Tramite l'app si potranno collegare i dispositivi desiderati e, come su Sensoria Run (vista nella sezione \ref{statoarte}), una volta avviata l'attività si potrà osservare a schermo diverse informazioni diverse in base al tipo di dispositivo che stiamo usando. Nel caso di utilizzo di un fascia da polso Coospo, per esempio, nell'app potremo vedere il nostro attuale battito cardiaco, seguito dalla velocità a cui stiamo correndo o camminando, in aggiunta ad ulteriori informazioni sull'attività che stiamo svolgendo. In questo modo si potrà denotare come durante l'attività dell'atleta ci saranno diverse "zone" che racchiuderanno un range di battiti. In base alla zona in cui ci troveremo in un dato momento del nostro allenamento, corrisponderà una percentuale di sforzo a cui si dovrà arrivare per ottimizzare la performance sportiva. In alcuni sensori come nell'HW807 (a sinistra della figura \ref{SensoriCoospo}) sarà visibile anche sul sensore stesso la zona tramite la colorazione di un led. Esistono anche altri tipi di sensori più complessi, come il ciclocomputer presente a destra della figura \ref{SensoriCoospo}, dal quale si potranno ottenere molte più informazioni osservandolo rispetto ad una fascia da polso. Una volta registrate e salvate correttamente le attività sarà possibile consultarle unicamente in app, potendo scorrere e analizzare diverse informazioni utili come si vede nell'immagine \ref{schermateCoospo}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.85\textwidth]{assets/schermataCoospo.png}
+    \caption{Schermate di riepilogo attività dell'app Coospo Ride.}
+    \label{schermateCoospo}
+\end{figure}
+
+Tra queste informazioni si può trovare:
+\begin{itemize}
+    \item La distanza percorsa.
+    \item La velocità media su tutto il percorso.
+    \item Il battito medio.
+    \item Le calorie bruciate.
+    \item Quanto tempo siamo restati in ogni "zona" di bpm.
+    \item Numerosi grafici illustranti le varie misurazioni.
+    \item Una mappa per visualizzare graficamente il percorso.
+\end{itemize}
+
+
 
 \section{Sviluppo ad-hoc}
 \subsection{Analisi dei requisiti}
