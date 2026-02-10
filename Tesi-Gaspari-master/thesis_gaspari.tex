@@ -181,13 +181,45 @@ Tra queste informazioni si può trovare:
     \item Una mappa per visualizzare graficamente il percorso.
 \end{itemize}
 
-
-
 \section{Sviluppo ad-hoc}
+Considerate le soluzioni analizzate nello stato dell'arte, è emersa la necessità di ideare un sistema ad-hoc per implementare delle funzionalità assenti nelle applicazioni ad oggi esistenti. Una di queste è la possibilità di poter osservare in modo più generico la mappa di un determinato percorso compiuto, colorando la mappa in base al battito registrato in un determinato settore, per dare un feedback immediato all'analizzatore delle diverse zone componenti il tracciato. Se si parla inoltre di proporre una soluzione strettamente professionale e non amatoriale, la scelta ottimale sarebbe esentare l'atleta da qualsiasi compito se non quello di avviare il tracciamento via app, scindendo dunque le funzionalità dell'app mobile, strettamente correlate all'avvio e all'arresto dell'attività, da quelle della dashboard web riservata all'addetto del monitoraggio, che comprenderanno l'analisi e la pulizia dei dati, creando statistiche utili e mostrando completamente ogni tipo di dato disponibile (compresi i dati raw). Un'ulteriore aspetto negativo nei prodotti presentati è la complessità dell'interfaccia in app, che porta l'atleta, non sempre esperto nell'ambito tecnologico, a confondersi e di conseguenza non riuscire nell'intento di collegare i sensori per avviare il monitoraggio dell'attività. Nella soluzione proposta e illustrata in questa tesi, l'interfaccia rimane minimale e intuitiva per permettere all'utente di capire istantaneamente come utilizzare l'applicativo, evitando di mantenere numerose e caotiche schermate che renderebbero caotico tutto il sistema. In entrambe le applicazioni proposte prima, la connessione ai sensori era strettamente riservata ai dispositivi dello stesso marchio dell'app, escludendo quindi di poter utilizzare, cardio-frequenzimetri di una marca e sensori di un'altra. Nella soluzione proposta invece, sono supportati tutti i tipi di dispositivi del marchio Sensoria per i dati più complessi, in aggiunta a qualsiasi tipo di dispositivo per il rilevamento del battito cardiaco, sfruttando la lettura delle caratteristiche Bluetooth di ogni unità collegata allo smartphone via app. Un'importante funzionalità non presente nella maggioranza dei prodotti presenti sul mercato, è la possibilità di trattare le attività registrate come replay, potendo scorrere tramite una comoda barra, lungo tutta la durata dell'attività, percependo meglio ogni singola variazione di dati nei sensori e permettendo così un'analisi molto più approfondita e precisa.
+
 \subsection{Analisi dei requisiti}
+I requisiti del sistema sono stati suddivisi in funzionali e non, al fine di garantire un'utilizzo piacevole mantenendo il corretto funzionamento dei componenti software. I requisiti funzionali comprenderanno:
+
+\begin{itemize}
+    \item Creazione di un profilo utente con annessi dati personali.
+    \item Connessione a sensori IMU e calzini sensorizzati Sensoria.
+    \item Connessione a cardio-frequenzimetri.
+    \item Avvio e arresto del monitoraggio via app.
+    \item Memorizzazione remota sicura.
+    \item Visualizzazione dei dati raw via dashboard web.
+    \item Visualizzazione di angoli di piegamento vari e pressioni plantari.
+    \item Visualizzazione dei Bongiorno Indexes per ogni tibia.
+    \item Visualizzazione della posizione GPS dell'atleta.
+    \item Visualizzazione di statistiche legate allo spostamento.
+    \item Replay delle attività.
+\end{itemize}
+
+Passando invece ai requisiti non funzionali, il sistema dovrà essere:
+
+\begin{itemize}
+    \item Affidabile.
+    \item Estremamente reattivo.
+    \item Piacevolmente usabile.
+    \item Sicuro per i dati.
+    \item Scalabile.
+    \item Intuitivo.
+\end{itemize}
+
+Il complesso di tutti questi requisiti rappresenta un tassello fondamentale per la corretta riuscita del progetto, garantendone un'elevata efficienza e proponendo un'alternativa solida alle soluzione disponibili attualmente sul mercato, implementando nuove funzionalità innovative.
+
 \subsection{Casi di studio}
+
 \subsection{Modello di sviluppo}
+
 \subsection{Architettura della soluzione}
+
 \subsection{Caratteristiche tecniche}
 
 
