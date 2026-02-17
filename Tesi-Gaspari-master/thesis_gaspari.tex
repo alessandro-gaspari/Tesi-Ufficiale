@@ -224,9 +224,20 @@ Qui elencati si possono trovare alcuni casi di studio che coprono quasi tutte le
 \end{enumerate}
 
 \subsection{Modello di sviluppo}
-Per lo sviluppo del sistema proposto è stato utilizzato un modello di sviluppo iterativo agile \footnote{Il modello di sviluppo iterativo agile prevede dei brevi cicli di sviluppo, chiamati sprint, abbinati ad un continuo confronto con l'utente.}, garantendo così alta flessibilità, elevata aderenza alle esigenze e uno sviluppo più rapido. L'adozione di questo modello di sviluppo si è rilevata particolarmente adatta al contesto del progetto siccome i requisiti erano in continua evoluzione in relazione alle richieste dell'utente. Il continuo confronto con gli utilizzatori finali ha assicurato che l'usabilità e l'efficienza fossero costantemente in crescita, grazie a costanti feedback e test. Questi ultimi hanno anche prevenuto errori progettuali che avrebbero causato ulteriori problematiche durante lo sviluppo del sistema. Ogni nuova funzionalità importante, una volta terminata, veniva testata per verificarne il corretto funzionamento ed eventualmente correggerne i bug presenti, assicurando così di avere un prodotto funzionante e facilmente correggibile data l'indipendenza di ogni componente dalle altre. 
+Per lo sviluppo del sistema proposto è stato utilizzato un modello di sviluppo iterativo agile \footnote{Il modello di sviluppo iterativo agile prevede dei brevi cicli di sviluppo, chiamati sprint, abbinati ad un continuo confronto con l'utente.}, garantendo così alta flessibilità, elevata aderenza alle esigenze e uno sviluppo più rapido. L'adozione di questo modello di sviluppo si è rilevata particolarmente adatta al contesto del progetto siccome i requisiti erano in continua evoluzione in relazione alle richieste dell'utente. Il continuo confronto con gli utilizzatori finali ha assicurato che l'usabilità e l'efficienza fossero costantemente in crescita, grazie a costanti feedback e test. Questi ultimi hanno anche prevenuto errori progettuali che avrebbero causato ulteriori problematiche durante lo sviluppo del sistema. Ogni nuova funzionalità importante, una volta terminata, veniva prontamente testata per verificarne il corretto funzionamento ed eventualmente correggerne i bug presenti, assicurando così di ottenere un prodotto funzionante e facilmente perfezionabile grazie all'indipendenza di ogni componente dalle altre. Un altro importante fattore che ha contribuito alla riuscita di questo progetto è stata la possibilità di testare sul campo le funzionalità implementate di tanto in tanto, garantendo così un feedback più reale e veritiero.
 
 \subsection{Architettura della soluzione}
+L'architettura della soluzione proposta è di tipo modulare, progettata per acquisire, salvare, elaborare e visualizzare numerose quantità di dati provenienti da sensori wearable. Il sistema è composto da più livelli, ciascuno responsabile di determinate funzionalità al fine di garantire scalabilià, usabilità e flessibilità. 
+Per garantire ordine, solidità ed efficacia, lo schema secondo il quale la soluzione è stata proposta segue la figura \ref{flowchart} \footnote{Lo schema composto dalla linea intera indica l'architettura pensata per il monitoraggio live. L'alternativa a linea tratteggiata mostra invece l'architettura del monitoraggio post attività.}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{assets/FLOWCHART.jpg}
+    \caption{Diagramma di flusso dell'architettura proposta.}
+    \label{flowchart}
+\end{figure}
+
+
 
 \subsection{Caratteristiche tecniche}
 
