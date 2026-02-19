@@ -251,11 +251,47 @@ Per garantire ordine, solidità ed efficacia, lo schema secondo il quale la solu
     \label{flowchart}
 \end{figure}
 
-Come si può considerare, la prima fase del flusso è banalmente l'accensione e il montaggio dei sensori, comprendenti al massimo un cardio-frequenzimetro due sensori IMU per il ginocchio e due calzini sensorizzati. Una volta accesi essi possono essere successivamente connessi tramite l'applicazione apposita, avviando conseguentemente il monitoraggio. Nella fase successiva avviene dunque la calibrazione, che consiste nel mantenimento di una posizione a gambe tese e parallele per cinque secondi, al fine di ottenere gli angoli corretti di piegamenti delle tibie e flessioni del ginocchio. In seguito alla calibrazione avverrà l'acquisizione dei dati dell'attività praticata dall'atleta. Dall'istante in cui l'atleta avvierà l'attività, tutti i dati relativi ad essa saranno visibili online in tempo reale grazie alla dashboard. Una volta terminato il monitoraggio tramite app, il log relativo all'attività verrà salvato su un server remoto, tramite il quale si potrà poi visualizzare con la funzionalità di replay tutti i dati delle attività passate. Con questo intuitivo flusso di funzionamento, si giunge quindi ad una soluzione minimale che permette di analizzare i dati in modi diversi a seconda delle necessità, mantenendo sempre un rendimento elevato e puntando alla semplicità d'uso per l'utente.
+Come si può notare, la prima fase del flusso è banalmente l'accensione e il montaggio dei sensori, comprendenti al massimo un cardio-frequenzimetro due sensori IMU per il ginocchio e due calzini sensorizzati. Una volta accesi essi possono essere successivamente connessi tramite l'applicazione apposita, avviando conseguentemente il monitoraggio. Nella fase successiva avviene dunque la calibrazione, che consiste nel mantenimento di una posizione a gambe tese e parallele per cinque secondi, al fine di ottenere gli angoli corretti di piegamenti delle tibie e flessioni del ginocchio. In seguito alla calibrazione avverrà l'acquisizione dei dati dell'attività praticata dall'atleta. Dall'istante in cui l'atleta avvierà l'attività, tutti i dati relativi ad essa saranno visibili online in tempo reale grazie alla dashboard. Una volta terminato il monitoraggio tramite app, il log relativo all'attività verrà salvato su un server remoto, tramite il quale si potrà poi visualizzare con la funzionalità di replay tutti i dati delle attività passate. Con questo intuitivo flusso di funzionamento, si giunge quindi ad una soluzione minimale che permette di analizzare i dati in modi diversi a seconda delle necessità, mantenendo sempre un rendimento elevato e puntando alla semplicità d'uso per l'utente.
 
 \subsection{Caratteristiche tecniche}
+Il sistema proposto è composto da un'applicazione mobile disponibile per dispositivi iOS o android, e una dashboard web accessibile da qualsiasi browser. Per la gestione e la memorizzazione dei dati invece è stato utilizzato un backend remoto. Il framework \footnote{Un framework è un insieme di strumenti e librerie che fornisce una struttura di base per sviluppare applicazioni o software.} utilizzato per lo sviluppo dell’applicazione è stato \textit{Flutter}, ideato da Google.
+Esso permette tramite un unico codice di creare app su iOS, Android, Web e Desktop in maniera affidabile e ottimizzata. Questo è reso possibile da una caratteristica unica, ossia il suo motore grafico
+“Skia” che elabora ogni componente da zero, al contrario, per esempio, di React \footnote{React è una libreria di JavaScript sviluppata da Facebook per costruire interfacce dinamiche e reattive.} che utilizza dei componenti nativi. 
+In questo modo l’UI \footnote{Con il termine UI (User Interface) si indica l'insieme degli elementi grafici, visivi e interattivi attraverso i quali un utente interagisce con un sistema.} sarà identica per tutti i dispositivi, indipendente dal sistema operativo installato su di essi, e facilmente
+personalizzabile a seconda delle esigenze dell'utente.
+Tra le altre comodità di Flutter troviamo sicuramente il fatto di poter sviluppare una schermata alla volta, con una percezione della reattività elevata grazie ad una funzionalità che prende il nome di "Hot Reload", tramite la quale non occorrerà chiudere ogni volta l’applicazione dopo una modifica per poi riaprirla ricompilando tutto il
+codice, ma semplicemente basterà eseguire una scorciatoia da tastiera per rigenerare velocemente la schermata interessata (in qualche decimo di secondo)
+apportando le modifiche effettuate. Inoltre, tutti i componenti in Flutter sono dei StatelessWidget
+(statici) o dei StatefulWidget (dinamici in base ai dati ricevuti).
+Il linguaggio su cui si basa Flutter si chiama \textit{Dart}. Anch’esso possiede numerosi vantaggi, tra cui:
 
+\begin{itemize}
+    \item La compilazione in codice nativo, che prevede la trasformazione di un programma scritto in un linguaggio di alto livello in istruzioni direttamente eseguibili dal processore del dispositivo, ottimizzando così il programma essendo che verràe eseguito direttamente dalla CPU.
+    \item Un garbage collector efficiente per evitare di sprecare sezioni di memoria inutilizzate.
+    \item Una gestione degli streaming ottimizzata. 
+\end{itemize}
+    
+Riprendendo l'ultimo punto, fondamentale in questo progetto, il flusso che segue uno streaming di dati su Dart, è il seguente:
 
+\begin{enumerate}
+    \item Dart ottiene un valore.
+    \item Il valore viene messo in una coda
+    \item L'UI di Flutter lo riceve (in pochi millesimi di secondo)
+    \item La schermata si aggiorna mostrando il dato
+\end{enumerate}
+
+Tramite questo algoritmo di funzionamento, anche streaming ad alta frequenza sono facilmente supportati, garantendo così una gestione di grandi quantità di dati.
+Ciò è anche dovuto alla gestione del WebSocket \footnote{Con l'espressione WebSocket ci si riferisce ad un protocollo di comunicazione che permette uno scambio bidirezionale di informazioni tramite una connessione persistente}, difatti quando esso verrà avviato, l’app creerà un canale di comunicazione sempre attivo in modo da facilitare lo scambio di informazioni in tempo
+reale tra le varie parti. 
+Dart, per velocizzare l’esecuzione, ha due modalità di compilazione:
+
+\begin{enumerate}
+    \item Ahead Of Time, solitamente utilizzata quando bisogna pubblicare l’app sullo store ufficiale, utilizzando
+    codice macchina nativo e assicurando stabilità.
+    \item Just In Time, usata durante lo sviluppo e composta da un codice che rimane molto flessibile per aggiornamenti frequenti a discapito di un'instabilità maggiore.
+\end{enumerate}
+
+Tutte queste funzionalità permettono all’applicazione di operare correttamente su molteplici piattaforme evitando ritardi, latenze o interruzioni brusche salvaguardando la reattività e favorendo l’utilizzo piacevole ed intuitivo da parte dell’utente.
 
 %% Fine dei capitoli normali, inizio dei capitoli-appendice (opzionali)
 \appendix
