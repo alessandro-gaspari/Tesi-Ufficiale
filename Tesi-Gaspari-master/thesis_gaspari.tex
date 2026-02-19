@@ -6,7 +6,8 @@
 
 \title{Sviluppo di un sistema per il monitoraggio di sensori per atleti}
 \author{Alessandro Gaspari}
-\supervisor{Prof.\ Ivan Scagnetto}
+\supervisor{Prof. Ivan Scagnetto}
+\cosupervisor{Dott.ssa Giulia Bongiorno \\ Dott. Luca Miceli}
 \tutor{Ivan Scagnetto}
 
 
@@ -22,7 +23,7 @@
 \maketitle
 
 \begin{dedication}
-    Dedica da scrivereeeeee
+    Dedica da scrivere
 
 \end{dedication}
 
@@ -105,9 +106,22 @@ Proseguendo con l'analisi del secondo grafico, generato utilizzando i dati del W
 Questo viene anche confermato dal grafico in figura \ref{Infortuni_Barcellona}, costruito basandosi sul dataset di Transfermarkt \cite{transfermarkt2023injuries}. Analizzando il grafico, notiamo come nel 2021, nel Barcellona si fosse registrato il maggior numero di infortuni per stagione. A seguito dell'adozione di sensoristica moderna e allenamenti mirati alla prevenzione di infortuni, come citato dal Barça Innovation Hub \cite{barca2021wearables}, il numero di infortuni diminuì notevolmente, rendendo profittevole l'investimento sulla sensoristica. Un altro importante studio
 tenuto da Preatoni Ezio \cite{preatoni2022wearables} evidenzia come le tecnologie sensoristiche indossabili (e.g. accelerometri o giroscopi) riescano a registrare dei dati che consentano la successiva identificazione di alterazioni di movimento o di carichi di lavoro, associati al rischio di infortunio. 
 
-Anche il pattinaggio su pista risulta uno sport molto interessante da analizzare pre e post monitoraggio sensoristico. Infatti esistono molti parametri catturabili da sensori indossabili che riescono ad indicare con precisione se un atleta è un professionista o un amatore nel pattinaggio, come per esempio la percentuale di accelerazione laterale della tibia rispetto a quella totale. Questo indice, ideato dalla Dottoressa Giulia Bongiorno, prende per l'appunto il nome di Bongiorno Index. Come citato nello studio \cite{article} della Dottoressa, un'elevata accelerazione laterale rispetto a quella totale, affermerà un'abilità maggiore dell'atleta, capace di gestire in maniera più efficiente e controllata la falcata.
-Un altro dato molto importante per decretare l'abilità di un atleta è la valutazione delle sue pressioni plantari, tramite la quale si può intuire quanto l'individuo esaminato sbilanci il piede lateralmente o posteriormente.
-Per poter però eseguire le attività di monitoraggio e analisi dei dati registrati dai sensori, si necessita di un sistema efficace e reattivo, facilmente utilizzabile dall'atleta. I sistemi generalmente richiesti per questi tipi di monitoraggi necessitano di:
+Un importante studio specifico sul pattinaggio corsa \footnote{Il pattinaggio corsa è una specialità del pattinaggio a rotelle regolamentata a livello internazionale, praticata su piste indoor/outdoor o su strada.} ha analizzato l'efficacia di calze intelligenti dotate di sensori
+piezoelettrici integrati direttamente nelle fibre tessili (posizionati su metatarso mediale, laterale e
+tallone) e accelerometri per il monitoraggio in tempo reale del pattinaggio di velocità. Questi sensori
+piezoelettrici rilevano le variazioni di pressione plantare, permettendo di distinguere i pattern motori
+tra atleti esperti e neofiti in base a come il complesso piede/pattino veniva appoggiato a terra. Un
+parametro aggiuntivo ma importante della ricerca trattata in tale articolo è la misura, mediante i due
+accelerometri posizionati a livello dei malleoli esterni, del Bongiorno Index, un indicatore di
+efficienza che calcola la percentuale di accelerazione latero-laterale rispetto all'accelerazione globale
+impressa durante ogni falcata. Tale indice, già proposto in un precedente lavoro \cite{articlebongiorno1}, veniva in passato
+ricavato mediante gli accelerometri di uno smartphone posizionato a livello di S1 \footnote{Per S1 si intende la prima vertebra sacrale in regione lombosacrale.}, ma il livello di
+precisione raggiunto era inferiore, dipendendo dalla qualità del device/smartphone utilizzato e
+potendo risentire di spostamenti del dispositivo stesso durante la pattinata. I risultati dello studio del
+2025 mostrano che un atleta d'élite raggiunge un indice significativamente più alto (circa 58\%)
+rispetto a un principiante (circa 27\%), definendo una "firma digitale" per l'ottimizzazione tecnica
+dell'allenamento \cite{articlebongiorno2}.
+Per poter però eseguire le attività di monitoraggio e analisi dei dati registrati dai sensori, si necessita di un sistema efficace e reattivo, facilmente utilizzabile dall'atleta. I sistemi generalmente richiesti per questi tipi di monitoraggi, necessitano di:
 
 \begin{itemize}
    \item Un'applicazione installata sul dispositivo mobile mantenuto dall'atleta durante l'attività per abilitare la connessione ai sensori e l'avvio delle registrazioni.
@@ -232,12 +246,12 @@ Per garantire ordine, solidità ed efficacia, lo schema secondo il quale la solu
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=1\textwidth]{assets/FLOWCHART.jpg}
+    \includegraphics[width=1\textwidth]{assets/FLOWCHART.png}
     \caption{Diagramma di flusso dell'architettura proposta.}
     \label{flowchart}
 \end{figure}
 
-
+Come si può considerare, la prima fase del flusso è banalmente l'accensione e il montaggio dei sensori, comprendenti al massimo un cardio-frequenzimetro due sensori IMU per il ginocchio e due calzini sensorizzati. Una volta accesi essi possono essere successivamente connessi tramite l'applicazione apposita, avviando conseguentemente il monitoraggio. Nella fase successiva avviene dunque la calibrazione, che consiste nel mantenimento di una posizione a gambe tese e parallele per cinque secondi, al fine di ottenere gli angoli corretti di piegamenti delle tibie e flessioni del ginocchio. In seguito alla calibrazione avverrà l'acquisizione dei dati dell'attività praticata dall'atleta. Dall'istante in cui l'atleta avvierà l'attività, tutti i dati relativi ad essa saranno visibili online in tempo reale grazie alla dashboard. Una volta terminato il monitoraggio tramite app, il log relativo all'attività verrà salvato su un server remoto, tramite il quale si potrà poi visualizzare con la funzionalità di replay tutti i dati delle attività passate. Con questo intuitivo flusso di funzionamento, si giunge quindi ad una soluzione minimale che permette di analizzare i dati in modi diversi a seconda delle necessità, mantenendo sempre un rendimento elevato e puntando alla semplicità d'uso per l'utente.
 
 \subsection{Caratteristiche tecniche}
 
