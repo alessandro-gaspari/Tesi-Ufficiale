@@ -17,7 +17,26 @@
 \usepackage{graphicx}
 \usepackage{geometry}
 \usepackage{subcaption}
+\usepackage{listings}
+\usepackage{xcolor}
 
+\lstdefinelanguage{dart}{
+  keywords={
+    abstract, else, import, show, as, enum, in, static,
+    assert, export, interface, super, async, extends, is,
+    switch, await, extension, late, mixin, this,
+    break, external, new, throw, case, factory, null, true,
+    false, catch, final, on, try, class, finally, operator,
+    typedef, const, for, part, var, continue, get, set,
+    rethrow, void, default, if, return, while, Stream, StreamController, StreamSubscription, Future, Widget, StatelessWidget, StatefulWidget, BuildContext,
+    State, Key, required, override, super, MaterialApp, Scaffold, Container, Column, Row, Text, ListView, Expanded, Center, Padding, SizedBox, GestureDetector, Navigator, ThemeData, isEmpty
+  },
+  keywordstyle=\bfseries,
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]",
+}
 
 \begin{document}
 \maketitle
@@ -244,6 +263,7 @@ Per garantire ordine, solidità ed efficacia, lo schema secondo il quale la solu
 Come si può notare, la prima fase del flusso è banalmente l'accensione e il montaggio dei sensori, comprendenti al massimo un cardio-frequenzimetro due sensori IMU per il ginocchio e due calzini sensorizzati. Una volta accesi essi possono essere successivamente connessi tramite l'applicazione apposita, avviando conseguentemente il monitoraggio. Nella fase successiva avviene dunque la calibrazione, che consiste nel mantenimento di una posizione a gambe tese e parallele per cinque secondi, al fine di ottenere gli angoli corretti di piegamenti delle tibie e flessioni del ginocchio. In seguito alla calibrazione avverrà l'acquisizione dei dati dell'attività praticata dall'atleta. Dall'istante in cui l'atleta avvierà l'attività, tutti i dati relativi ad essa saranno visibili online in tempo reale grazie alla dashboard. Una volta terminato il monitoraggio tramite app, il log relativo all'attività verrà salvato su un server remoto, tramite il quale si potrà poi visualizzare con la funzionalità di replay tutti i dati delle attività passate. Con questo intuitivo flusso di funzionamento, si giunge quindi ad una soluzione minimale che permette di analizzare i dati in modi diversi a seconda delle necessità, mantenendo sempre un rendimento elevato e puntando alla semplicità d'uso per l'utente.
 
 \subsection{Caratteristiche tecniche}
+\label{caratteristichetecniche}
 Il sistema proposto è composto da un'applicazione mobile disponibile per dispositivi iOS o android, e una dashboard web accessibile da qualsiasi browser. Per la gestione e la memorizzazione dei dati invece è stato utilizzato un backend remoto. Il framework\footnote{Un framework è un insieme di strumenti e librerie che fornisce una struttura di base per sviluppare applicazioni o software.} utilizzato per lo sviluppo dell’applicazione è stato \textit{Flutter}, ideato da Google.
 Esso permette tramite un unico codice di creare app su iOS, Android, Web e Desktop in maniera affidabile e ottimizzata. Questo è reso possibile da una caratteristica unica, ossia il suo motore grafico
 “Skia” che elabora ogni componente da zero, al contrario, per esempio, di React\footnote{React è una libreria di JavaScript sviluppata da Facebook per costruire interfacce dinamiche e reattive.} che utilizza dei componenti nativi. 
@@ -315,11 +335,119 @@ Come si può osservare nella figura \ref{render}, la prima istruzione che verrà
 \chapter{Implementazione}
 
 \section{Introduzione}
-Nel seguente capitolo verranno analizzate nel dettaglio tutte le parti di codice significative per la realizzazione dell'applicazione mobile e della dashboard web, commentando ed esplicando attentamente ogni funzionalità. Partendo da una visione generale del complesso sistemistico si giungerà dunque a degli approfondimenti sulle varie componenti. Verranno mostrati esempi pratici, snapshot di codice e screenshot delle interfacce, al fine di fornire una comprensione chiara del funzionamento del sistema e delle scelte progettuali adottate. L'obiettivo è non solo descrivere come il sistema è stato implementato, ma anche motivare le scelte tecniche e metodologiche dietro ogni soluzione adottata.
+Nel seguente capitolo verranno analizzate nel dettaglio tutte le parti di codice significative per la realizzazione dell'applicazione mobile e della dashboard web, commentando ed esplicando attentamente ogni funzionalità. Partendo da una visione generale del complesso sistemistico si giungerà dunque a degli approfondimenti sulle varie componenti. Verranno mostrati esempi pratici, snapshot di codice e screenshot delle interfacce, al fine di fornire una comprensione chiara del funzionamento del sistema e delle scelte progettuali adottate. L'obiettivo non è solo descrivere come il sistema sia stato implementato, ma anche motivare le scelte tecniche e metodologiche dietro ogni soluzione adottata. 
 
 \section{Sviluppo dell'applicazione mobile}
 \subsection{File di configurazione}
+Al fine della corretta esecuzione del codice, Flutter necessita di alcuni file di configurazione presenti all'interno della cartella principale contenente il codice dell'applicazione. Uno dei più importanti prende il nome di default \textit{pubspec.yaml}.
+
+\begin{lstlisting}[caption={Alcune delle dipendenze presenti nel file pubspec.yaml.}, label={pubspec}]
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.3.3
+  flutter_blue_plus: ^1.32.12
+  geolocator: ^13.0.2
+  apple_maps_flutter: ^1.4.0
+  cupertino_icons: ^1.0.8
+\end{lstlisting}
+
+Al suo interno troveremo tutte le dipendenze necessarie a flutter, la versione dell'ambiente di sviluppo, il nome e la descrizione dell'applicazione, insieme anche all'impostazione dell'icona. Tra le varie dipendenze, come possiamo notare nel listato \ref{pubspec} troviamo librerie dedicate a:
+
+\begin{itemize}
+    \item Organizzazione delle icone interne all'applicazione.
+    \item Gestione del BLE.
+    \item Autorizzazione all'acquisizione di dati relativi alla geolocalizzazione.
+    \item Inizializzazione dei socket. 
+    \item Esecuzione delle funzioni relative all'app in background.
+\end{itemize}
+Tra gli altri numerosi file di configurazione, molti dei quali poco rilevanti all'analisi, troviamo due ulteriori codici importanti per la corretta esecuzione su Android e iOS. Essi, infatti, sono rispettivamente \textit{AndroidManifest.xml} e \textit{Info.plist}. Al loro interno ci saranno essenzialmente le stesse configurazioni essendo che su entrambi i sistemi operativi si necessiterà di ottenere delle autorizzazioni dal dispositivo per poter far utilizzare l'applicazione. Queste autorizzazioni riguarderanno, similarmente a quanto visto precedentemente nel file \textit{pubspec.yaml}, Bluetooth, geolocalizzazione, esecuzione in background e altri requisiti per l'interfaccia utente.  
+
 \subsection{Schermate}
+Flutter organizza il complesso del codice dividendolo in più schermate, ognuna delle quali viene collegata alle altre per far sì che ci si possa spostare comodamente tra di esse. La prima schermata che in questo progetto si visualizzerà una volta aperta l'app per la prima volta sarà la \textit{profile screen.dart}, per far si che l'utente possa creare il suo profilo inserendo i suoi dati.
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.2915\textwidth]{assets/profilovuoto.png} &
+\includegraphics[width=0.30\textwidth]{assets/profilopieno.png} \\
+(a) Schermata iniziale vuota & (b) Schermata iniziale compilata
+\end{tabular}
+\caption{Schermate iniziali di profilazione utente.}
+\label{schermateiniziali}
+\end{figure}
+
+Prima però, per poter effettivamente verificare che in memoria locale non ci siano già dei profili creati, verrà effettuato il controllo \ref{verificaprofili}.
+\begin{lstlisting}[language=dart, caption={Istruzione per la verifica dell'esistenza di eventuali profili.}, label={verificaprofili}]
+if (profileProvider.profiles.isEmpty) {
+  return const ProfileFormScreen();
+}
+\end{lstlisting}
+Una volta verificata l'assenza di profili dunque, apparirà la schermata per la compilazione, al cui interno si troveranno tre campi di input in cui inserire le informazioni richieste dal form, che verranno poi verificate per evitare errori futuri causati da profili con informazioni mancanti.
+
+\begin{lstlisting}[language=dart, caption={Validazione dei campi di input del form.}, label={formvalidation}]
+if (_formKey.currentState!.validate()) {
+  // salvataggio dati
+}
+\end{lstlisting}
+Al di sotto di essi si troveranno due card colorate dedicate alla scelta del genere, e una lista di avatar tra cui poter scegliere la preferita, assicurando così un'esperienza di personalizzazione minimale ma completa all'utente. A concludere la pagina è presente il pulsante di salvataggio, il quale consente la memorizzazione dei dati inseriti all’interno di una struttura persistente gestita dal provider.
+
+\begin{lstlisting}[language=dart, caption={Creazione o modifica di un profilo utente.}, label={saveprofile}]
+if (widget.profileToEdit == null) {
+  provider.addProfile(name, age, gender, weight, avatar);
+} else {
+  provider.updateProfile(id, name, age, gender, weight, avatar);
+}
+\end{lstlisting}
+La schermata di creazione e modifica del profilo è stata progettata come componente riutilizzabile, permettendo di distinguere automaticamente tra inserimento di un nuovo profilo e aggiornamento di uno esistente, riducendo la duplicazione del codice e migliorando la gestione dell’applicazione.
+
+Una volta creato il profilo utente e validato i suoi dati, l'applicazione si spostera autonomamente alla seconda schermata, ossia la \textit{scanner screen.dart}. Essa viene trattata come uno StatefulWidget, (\ref{caratteristichetecniche}) essendo che dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
+
+\begin{lstlisting}[language=dart, caption={Definizione della schermata di scansione.}, label={scanner_def}]
+class ScannerScreen extends StatefulWidget {
+  const ScannerScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ScannerScreen> createState() => ScannerScreenState();
+}
+\end{lstlisting}
+Nel codice che la compone si trovano numerose variabili di stato indicanti informazioni necessarie all'applicazione per evitare di eseguire operazioni nel caso in cui lo stato non sia quello previsto. Alcune di esse, visionabili nel frammento di codice \ref{scanner_vars}, includono la lista dei dispositivi Sensoria rilevati (a seguito di un previo filtraggio tra tutti i dispositivi Bluetooth), lo stato della scansione, le condizioni del modulo BLE e del GPS, oltre ai dati di un eventuale cardio-frequenzimetro connesso.
+
+\begin{lstlisting}[language=dart, caption={Variabili di stato della schermata.}, label={scanner_vars}]
+List<ScanResult> _sensoriaDevices = [];
+bool _isScanning = false; 
+BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
+GpsSignalQuality _gpsQuality = GpsSignalQuality.poor; 
+bool _isStartingTracking = false; //verifica avvio tracciamento
+BluetoothDevice? _connectedHrm; //
+int? _localBpm;
+\end{lstlisting}
+
+
+
+Per quanto riguarda lo stato del GPS, affinchè la lettura di esso sia immediata, è stata implementata un'enumerazione nominata \textit{GpsSignalQuality} (come si vede nel listato \ref{gps_enum}) che assegnerà automaticamente un'icona e un testo in base alla qualità del segnale.
+
+\begin{lstlisting}[language=dart, caption={Enumerazione della qualità del segnale GPS.}, label={gps_enum}]
+enum GpsSignalQuality { excellent, good, poor }
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \subsection{Providers}
 \subsection{File principale}
 \section{Sviluppo della dashboard web}
