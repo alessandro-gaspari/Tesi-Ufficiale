@@ -402,6 +402,16 @@ if (widget.profileToEdit == null) {
 La schermata di creazione e modifica del profilo è stata progettata come componente riutilizzabile, permettendo di distinguere automaticamente tra inserimento di un nuovo profilo e aggiornamento di uno esistente, riducendo la duplicazione del codice e migliorando la gestione dell’applicazione.
 
 Una volta creato il profilo utente e validato i suoi dati, l'applicazione si spostera autonomamente alla seconda schermata, ossia la \textit{scanner screen.dart}. Essa viene trattata come uno StatefulWidget, (\ref{caratteristichetecniche}) essendo che dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.30\textwidth]{assets/screenvuota.jpg} &
+\includegraphics[width=0.30\textwidth]{assets/scansione.jpg} \\
+(a) \textit{Scanner screen} iniziale. & (b) \textit{Scanner screen} in fase di scansione.
+\end{tabular}
+\caption{Screenshot delle schermate \textit{scanner screen}.}
+\label{scannerscreens}
+\end{figure}
 
 \begin{lstlisting}[language=dart, caption={Definizione della schermata di scansione.}, label={scanner_def}]
 class ScannerScreen extends StatefulWidget {
@@ -418,22 +428,134 @@ List<ScanResult> _sensoriaDevices = [];
 bool _isScanning = false; 
 BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
 GpsSignalQuality _gpsQuality = GpsSignalQuality.poor; 
-bool _isStartingTracking = false; //verifica avvio tracciamento
-BluetoothDevice? _connectedHrm; //
+bool _isStartingTracking = false; 
+BluetoothDevice? _connectedHrm; 
 int? _localBpm;
 \end{lstlisting}
+Per quanto riguarda lo stato del GPS, affinchè la lettura di esso sia immediata, è stata implementata un'enumerazione nominata \textit{GpsSignalQuality} composta da tre valori di qualità segnale a cui verranno assegnati automaticamente icone e testi personalizzati.
+Facendo così, al posto di mostrare i dati grezzi dell'accuratezza GPS in metri, i dati verranno categorizzati facilitandone la comprensione.
 
+\begin{lstlisting}[language=dart, caption={Classificazione della qualità GPS in base all'accuratezza.}, label={gps_accuracy}]
+if (position.accuracy < 10) {
+  _gpsQuality = GpsSignalQuality.excellent;
+} else if (position.accuracy < 30) {
+  _gpsQuality = GpsSignalQuality.good;
+} else {
+  _gpsQuality = GpsSignalQuality.poor;
+}
+\end{lstlisting}
+Quando giungerà il momento di effettuare la scansione dei dispositivi Bluetooth nelle vicinanze verrà sfruttato un filtro (mostrato nel listato \ref{ble_filter}) dedicato a scartare tutti i dispositivi al di fuori dei prodotti Sensoria. Esso permette, tramite un controllo della nomenclatura BLE, di mostrare così solo dispositivi compatibili con l'applicazione.
 
+\begin{lstlisting}[language=dart, caption={Ascolto dei risultati BLE e filtraggio dei dispositivi Sensoria.}, label={ble_filter}]
+_scanSubscription = FlutterBluePlus.scanResults.listen((results) {
+  final scannedSensoria = results.where((result) {
+    final name = result.device.advName.toLowerCase();
+    return name.contains('sensoria');
+  }).toList();
+  setState(() => _sensoriaDevices = scannedSensoria);
+});
+\end{lstlisting}
+L'effettiva scansione Bluetooth (una volta verificato che esso sia stato attivato sullo smartphone) verrà gestita invocando il pacchetto di Flutter chiamato \textit{FlutterBluePlus}. Una volta premuto il tasto di scansione, verrà avviata la rilevazione dei dispositivi per un periodo di 10 secondi, al fine di non consumare eccessivamente la batteria del dispositivo.
 
-Per quanto riguarda lo stato del GPS, affinchè la lettura di esso sia immediata, è stata implementata un'enumerazione nominata \textit{GpsSignalQuality} (come si vede nel listato \ref{gps_enum}) che assegnerà automaticamente un'icona e un testo in base alla qualità del segnale.
-
-\begin{lstlisting}[language=dart, caption={Enumerazione della qualità del segnale GPS.}, label={gps_enum}]
-enum GpsSignalQuality { excellent, good, poor }
+\begin{lstlisting}[language=dart, caption={Avvio della scansione BLE con verifica dello stato dell'adapter.}, label={ble_scan}]
+if (_adapterState != BluetoothAdapterState.on) {
+  _showMessage('Attiva il Bluetooth per continuare');
+  return;
+}
+await FlutterBluePlus.startScan(
+  timeout: const Duration(seconds: 10),
+  androidUsesFineLocation: true,
+);
 \end{lstlisting}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.30\textwidth]{assets/connessi.jpg}
+    \caption{\textit{Scanner screen} post fase di connessione e personalizzazione sensori.}
+    \label{connessi}
+\end{figure}
 
+Una volta effettuata la scansione, l'utente avrà la possibilità di connettersi al sensore desiderato direttamente dalla \textit{scanner screen} tramite un comodo pulsante. L'alternativa è quella di cliccare sul sensore e passare ad una nuova schermata, ossia la \textit{device detail screen} che verrà analizzata in seguito. Per connettersi al sensore, il sistema verificherà prima se il dispositivo risulta già connesso tramite il \textit{ConnectedDeviceProvider}. In caso positivo, lo disconnetterà, altrimenti procederà a connettersi ad esso, sfruttando un provider dedicato ai singoli dispositivi (come si osserva nello snippet \ref{device_connect}). \\ \\
 
+\begin{lstlisting}[language=dart, caption={Connessione e disconnessione di un sensore dalla lista.}, label={device_connect}]
+if (isConnected) {
+  await devicesProvider.disconnectDevice(device);
+} else {
+  await devicesProvider.connectDevice(device);
+}
+\end{lstlisting}
+Connessi tutti i dispositivi Sensoria, si passerà all'eventuale connessione del cardio-frequenzimetro tramite l'apposito tasto in alto a destra nelle figure \ref{scannerscreens} e \ref{connessi}. L'applicazione attualmente supporta una grande quantità di sensori dedicati all'analisi del battito cardiaco, essendo che ricerca nei cardio-frequenzimetri la caratteristica Bluetooth 0x2A37, in molti indicante per l'appunto il valore relativo ai BPM. Una volta connesso al cardio-frequenzimetro, l'app si iscriverà allo stream dei dati RAW che poi verranno processati ed elaborati al fine di essere visualizzati come battiti per minuto, aggiornando la UI e il provider.
 
+\begin{lstlisting}[language=dart, caption={Sottoscrizione alla caratteristica BLE per la lettura del BPM.}, label={hrm_bpm}]
+await hrmChar.setNotifyValue(true);
+_hrmSubscription = hrmChar.lastValueStream.listen((value) {
+  final bpm = _parseHeartRate(value);
+  if (bpm != null) setState(() => _localBpm = bpm);
+});
+\end{lstlisting}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.30\textwidth]{assets/cardiofreq.jpg}
+    \caption{Schermata a comparsa dedicata alla connessione di cardio-frequenzimetri}
+    \label{cardiofreq}
+\end{figure}
+Come si può osservare nello screenshot \ref{cardiofreq} con lo stesso principio di funzionamento, si potrà eseguire la scansione per dispositivi in grado di misurare il battito cardiaco. Una volta connesso, la card del dispositivo si colorerà di verde per indicare l'avvenuto abbinamento. Un'ulteriore verifica di connessione sarà la comparsa in alto a destra (al posto del tasto per l'aggiunta del cardio-frequenzimetro) del battito cardiaco rilevato secondo per secondo dal sensore. 
+
+L'ultima informazione presente sulla \textit{scanner screen} si riferisce allo stato del server per la memorizzazione e lo streaming di dati su Render.com. Esso risulterà "off" quando il codice Python citato in \ref{caratteristichetecniche} non sarà attivo, "on" altrimenti. Questo importante controllo viene delegato allo \textit{StreamingManager} (approfondito in seguito) che tramite il widget \textit{Consumer<StreamingManager>} si metterà in ascolto della variabile booleana \textit{isServerReachable}. Ogni volta che verrà rilevata una variazione nella connessione, verrà notificato, permettendo così l'aggiornamento dell'interfaccia tramite una nuova colorazione dell'indicatore e un cambio di testo. 
+
+\begin{lstlisting}[language=dart, caption={Lettura dello stato del server tramite provider.}, label={server_status}]
+Consumer<StreamingManager>(
+  builder: (context, manager, child) {
+    final isReady = manager.isServerReachable;
+    return Text(isReady ? "SERVER ON" : "SERVER OFF");
+  }
+)
+\end{lstlisting}
+
+Dopo aver connesso i dispositivi Sensoria, il cardio-frequenzimetro e aver verificato la disponibilità del server si potrà procedere all'avvio del tracciamento tramite l'apposito tasto "avvia tracking". Sempre tramite lo \textit{StreamingManager} verranno aperti tutti i socket dei sensori, trasmettendo in aggiunta anche i dati relativi al profilo utente, in modo da poterlo visualizzare sul sito. 
+
+\begin{lstlisting}[language=dart, caption={Avvio degli stream, invio del profilo e navigazione alla TrackingScreen.}, label={start_tracking}]
+await manager.startAllStreaming(
+  devicesProvider.connectedDevices, devicesProvider.deviceNames,
+);
+if (activeProfile != null) {
+  await manager.sendProfileData(
+    activeProfile.name, activeProfile.age,
+    activeProfile.gender, activeProfile.weight,
+  );
+}
+Navigator.push(context,
+  MaterialPageRoute(builder: (_) => const TrackingScreen()));
+\end{lstlisting}
+Per evitare perdite di memoria o mantenimenti inutili di connessioni attive, quando la schermata verrà chiusa, il sistema invocherà il metodo \textit{dispose} che chiuderà tutte le sottoscrizioni alle varie streaming (Bluetooth, GPS...).
+
+Come descritto in precedenza, quando si cliccherà su un determinato dispositivo disponibile tra quelli scansionati, si passerà ad una nuova schermata di personalizzazione ed eventuale connessione. Essa prende il nome di \textit{device detail screen} e, lavorando su un singolo sensore, avrà necessità di ricevere l'istanza del dispositivo Bluetooth, il suo nome e la sua tipologia. Anche questa schermata sfrutterà lo \textit{StreamingManager} per sottoscriversi allo streaming relativo allo stato del dispositivo, in modo da poter aggiornare reattivamente l'indicatore di connessione in caso di cambiamenti. In questa schermata sarà possibile anche personalizzare il sensore a proprio piacimento come più si riterrà utile; come prima cosa verrà perciò interrogato il provider relativo ai dispositivi connessi per sapere se precedentemente l'utente aveva già modificato il nome o l'icona del sensore. Nel caso in cui il sistema riesca a trovare in memoria una personalizzazione per quel determinato sensore (riconosciuto univocamente dal suo ID) essa verrà mostrata. 
+
+\begin{lstlisting}[language=dart, caption={Recupero dell'emoji associata tramite il provider condiviso.}, label={detail_emoji}]
+String _getDeviceEmoji() {
+  final devicesProvider = Provider.of<ConnectedDevicesProvider>(...);
+  final customIconType = devicesProvider.getDeviceIconType(widget.device);
+  
+  if (customIconType != null && _emojiMap.containsKey(customIconType)) {
+    return _emojiMap[customIconType]!;
+  }
+  return '?';
+}
+\end{lstlisting}
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.49\textwidth]{assets/custom.jpg} &
+\includegraphics[width=0.50\textwidth]{assets/personalizzato.jpg} \\
+(a) Schermata di personalizzazione sensore. & (b) Schermata post personalizzazione.
+\end{tabular}
+\caption{Screenshot delle schermate \textit{device detail screen}.}
+\label{detailscreens}
+\end{figure}
+
+Terminata la procedura di personalizzazione, i nuovi dati relativi al sensore verranno subito salvati, forzando poi la ricostruzione dell'entità relativa al sensore per sovrascrivere i dati e aggiornare le informazioni a schermo. Quando l'utente si riterrà soddisfatto potrà comodamente tornare alla \textit{scanner screen} semplicemente premendo il tasto apposito posto in alto a sinistra nelle immagini \ref{detailscreens}, il che invocherà un \textit{dispose} che cancellerà le sottoscrizioni in ascolto dello stato di connessione relative al sensore preso in considerazione. 
 
 
 
@@ -449,7 +571,9 @@ enum GpsSignalQuality { excellent, good, poor }
 
 
 \subsection{Providers}
-\subsection{File principale}
+\subsection{File main}
+
+
 \section{Sviluppo della dashboard web}
 \section{Esempi d'uso}
 
