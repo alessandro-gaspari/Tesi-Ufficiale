@@ -364,7 +364,7 @@ Al suo interno troveremo tutte le dipendenze necessarie a flutter, la versione d
 Tra gli altri numerosi file di configurazione, molti dei quali poco rilevanti all'analisi, troviamo due ulteriori codici importanti per la corretta esecuzione su Android e iOS. Essi, infatti, sono rispettivamente \textit{AndroidManifest.xml} e \textit{Info.plist}. Al loro interno ci saranno essenzialmente le stesse configurazioni essendo che su entrambi i sistemi operativi si necessiterà di ottenere delle autorizzazioni dal dispositivo per poter far utilizzare l'applicazione. Queste autorizzazioni riguarderanno, similarmente a quanto visto precedentemente nel file \textit{pubspec.yaml}, Bluetooth, geolocalizzazione, esecuzione in background e altri requisiti per l'interfaccia utente.  
 
 \subsection{Schermate}
-Flutter organizza il complesso del codice dividendolo in più schermate, ognuna delle quali viene collegata alle altre per far sì che ci si possa spostare comodamente tra di esse. La prima schermata che in questo progetto si visualizzerà una volta aperta l'app per la prima volta sarà la \textit{profile screen.dart}, per far si che l'utente possa creare il suo profilo inserendo i suoi dati.
+Flutter organizza il complesso del codice dividendolo in più schermate, ognuna delle quali viene collegata alle altre per far sì che ci si possa spostare comodamente tra di esse. La prima schermata che in questo progetto si visualizzerà una volta aperta l'app per la prima volta sarà la \textit{\textbf{profile screen}}, per far si che l'utente possa creare il suo profilo inserendo i suoi dati.
 
 \begin{figure}[htbp]
 \centering
@@ -401,7 +401,7 @@ if (widget.profileToEdit == null) {
 \end{lstlisting}
 La schermata di creazione e modifica del profilo è stata progettata come componente riutilizzabile, permettendo di distinguere automaticamente tra inserimento di un nuovo profilo e aggiornamento di uno esistente, riducendo la duplicazione del codice e migliorando la gestione dell’applicazione.
 
-Una volta creato il profilo utente e validato i suoi dati, l'applicazione si spostera autonomamente alla seconda schermata, ossia la \textit{scanner screen.dart}. Essa viene trattata come uno StatefulWidget, (\ref{caratteristichetecniche}) essendo che dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
+Una volta creato il profilo utente e validato i suoi dati, l'applicazione si spostera autonomamente alla seconda schermata, ossia la \textit{\textbf{scanner screen}}. Essa viene trattata come uno StatefulWidget, (\ref{caratteristichetecniche}) essendo che dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
 \begin{figure}[htbp]
 \centering
 \begin{tabular}{cc}
@@ -475,7 +475,7 @@ await FlutterBluePlus.startScan(
     \label{connessi}
 \end{figure}
 
-Una volta effettuata la scansione, l'utente avrà la possibilità di connettersi al sensore desiderato direttamente dalla \textit{scanner screen} tramite un comodo pulsante. L'alternativa è quella di cliccare sul sensore e passare ad una nuova schermata, ossia la \textit{device detail screen} che verrà analizzata in seguito. Per connettersi al sensore, il sistema verificherà prima se il dispositivo risulta già connesso tramite il \textit{ConnectedDeviceProvider}. In caso positivo, lo disconnetterà, altrimenti procederà a connettersi ad esso, sfruttando un provider dedicato ai singoli dispositivi (come si osserva nello snippet \ref{device_connect}). \\ \\
+Una volta effettuata la scansione, l'utente avrà la possibilità di connettersi al sensore desiderato direttamente dalla \textit{scanner screen} tramite un comodo pulsante. L'alternativa è quella di cliccare sul sensore e passare ad una nuova schermata, la \textit{device detail screen} che verrà analizzata in seguito. Per connettersi al sensore, il sistema verificherà prima se il dispositivo risulta già connesso tramite il \textit{ConnectedDeviceProvider}. In caso positivo, lo disconnetterà, altrimenti procederà a connettersi ad esso, sfruttando un provider dedicato ai singoli dispositivi (come si osserva nello snippet \ref{device_connect}). \\ \\
 
 \begin{lstlisting}[language=dart, caption={Connessione e disconnessione di un sensore dalla lista.}, label={device_connect}]
 if (isConnected) {
@@ -530,7 +530,7 @@ Navigator.push(context,
 \end{lstlisting}
 Per evitare perdite di memoria o mantenimenti inutili di connessioni attive, quando la schermata verrà chiusa, il sistema invocherà il metodo \textit{dispose} che chiuderà tutte le sottoscrizioni alle varie streaming (Bluetooth, GPS...).
 
-Come descritto in precedenza, quando si cliccherà su un determinato dispositivo disponibile tra quelli scansionati, si passerà ad una nuova schermata di personalizzazione ed eventuale connessione. Essa prende il nome di \textit{device detail screen} e, lavorando su un singolo sensore, avrà necessità di ricevere l'istanza del dispositivo Bluetooth, il suo nome e la sua tipologia. Anche questa schermata sfrutterà lo \textit{StreamingManager} per sottoscriversi allo streaming relativo allo stato del dispositivo, in modo da poter aggiornare reattivamente l'indicatore di connessione in caso di cambiamenti. In questa schermata sarà possibile anche personalizzare il sensore a proprio piacimento come più si riterrà utile; come prima cosa verrà perciò interrogato il provider relativo ai dispositivi connessi per sapere se precedentemente l'utente aveva già modificato il nome o l'icona del sensore. Nel caso in cui il sistema riesca a trovare in memoria una personalizzazione per quel determinato sensore (riconosciuto univocamente dal suo ID) essa verrà mostrata. 
+Come descritto in precedenza, quando si cliccherà su un determinato dispositivo disponibile tra quelli scansionati, si passerà ad una nuova schermata di personalizzazione ed eventuale connessione. Essa prende il nome di \textit{\textbf{device detail screen}} e, lavorando su un singolo sensore, avrà necessità di ricevere l'istanza del dispositivo Bluetooth, il suo nome e la sua tipologia. Anche questa schermata sfrutterà lo \textit{StreamingManager} per sottoscriversi allo streaming relativo allo stato del dispositivo, in modo da poter aggiornare reattivamente l'indicatore di connessione in caso di cambiamenti. In questa schermata sarà possibile anche personalizzare il sensore a proprio piacimento come più si riterrà utile; come prima cosa verrà perciò interrogato il provider relativo ai dispositivi connessi per sapere se precedentemente l'utente aveva già modificato il nome o l'icona del sensore. Nel caso in cui il sistema riesca a trovare in memoria una personalizzazione per quel determinato sensore (riconosciuto univocamente dal suo ID) essa verrà mostrata. 
 
 \begin{lstlisting}[language=dart, caption={Recupero dell'emoji associata tramite il provider condiviso.}, label={detail_emoji}]
 String _getDeviceEmoji() {
