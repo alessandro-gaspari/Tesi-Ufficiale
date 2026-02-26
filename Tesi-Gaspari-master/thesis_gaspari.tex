@@ -660,6 +660,32 @@ Timer.periodic(const Duration(seconds: 1), (timer) async {
 \end{lstlisting}
 Per la gestione del cronometro relativo alla durata dell'attività, al posto di aggiornare il suo valore ogni secondo con una chiamata a \textit{setState} che implicherebbe ri-renderizzare ogni secondo tutte le componenti presenti nella schermata (facendo crollare le prestazioni), il sistema isola questa feature in uno StatelessWidget di piccole dimensioni, ovviando il problema e preservando la fluidità. Quanto l'indicatore in alto a destra della schermata, indicante il possibile raggiungimento o meno del server, esso leggerà il valore \textit{isServerReachable} che eseguirà dei ping continui per poi colorare l'indicatore in base all'esito.
 
+La visualizzazione riguardante la lista dei sensori connessi è gestita da una mappatura dei dispositivi del provider. In questo modo l'app genererà tante card quante saranno i sensori connessi all'avvio dell'attività, e controllerà se il buffer locale in cui verranno immagazzinati i dati starà effettivamente ricevendo dati da quel dispositivo Bluetooth (riconosciuto dal suo ID unico). In caso affermativo mostrerà un led verde lampeggiante, altrimenti rosso. Anche il cardio-frequenzimetro verrà accodato alla lista dei sensori se disponibile, assegnandoli un'icona personalizzata per distinguerlo dagli altri. Nel caso in cui un determinato sensore non abbia un nome personalizzato o un'icona personalizzata gliene verranno assegnate di default. 
+
+\begin{lstlisting}[language=dart, caption={Generazione delle card relative ai dispositivi BLE connessi.}, label={tracking_sensors}]
+...devicesProvider.connectedDevices.entries.map((entry) {
+  return _buildDeviceCard( //creazione della card sensore
+    devicesProvider.deviceNames[entry.key] ?? "Sensoria Device", 
+    entry.key, 
+    streamingManager.allSensorData[entry.key] != null, 
+    _getDeviceEmoji(entry.value, devicesProvider)
+  );
+}),
+if (streamingManager.hrmDeviceName != null)
+  _buildDeviceCard(hrmName, "HRM-SENSOR", true, "\\icona cuore"),
+\end{lstlisting}
+Terminata la sessione, l'utente premerà il pulsante rosso "stop tracking" posto in fondo alla schermata. Questo evento invocherà \textit{StreamingManager} per fermare la registrazione in primis della sessione (con la funzione \textit{stopTracking}) e successivamente dell'invio dati verso il socket (tramite \textit{stopAll}). Per finire l'applicazione ritornerà sulla schermata iniziale rilasciando tutte le risorse precedentemente in uso dalla \textit{tracking screen}.
+
+\begin{lstlisting}[language=dart, caption={Procedura di arresto degli stream dati e chiusura della sessione.}, label={tracking_stop}]
+Future<void> _handleStopTracking() async {
+  ...
+  streamingManager.stopTracking();
+  await streamingManager.stopAll();
+  ...
+}
+\end{lstlisting}
+
+
 \subsection{Providers}
 \subsection{File main}
 
