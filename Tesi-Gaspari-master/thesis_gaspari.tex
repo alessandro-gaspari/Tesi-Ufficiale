@@ -557,18 +557,108 @@ String _getDeviceEmoji() {
 
 Terminata la procedura di personalizzazione, i nuovi dati relativi al sensore verranno subito salvati, forzando poi la ricostruzione dell'entità relativa al sensore per sovrascrivere i dati e aggiornare le informazioni a schermo. Quando l'utente si riterrà soddisfatto potrà comodamente tornare alla \textit{scanner screen} semplicemente premendo il tasto apposito posto in alto a sinistra nelle immagini \ref{detailscreens}, il che invocherà un \textit{dispose} che cancellerà le sottoscrizioni in ascolto dello stato di connessione relative al sensore preso in considerazione. 
 
+L'ultima schermata dell'applicazione accessibile prima di effettuare il tracciamento sarà quella dedicata ai profili, precedentemente utilizzata al primo avvio dell'applicazione. Tramite i pulsanti dedicati in essa si potranno modificare i profili esistenti (cliccando sul tasto a forma di matita), eliminare i profili indesiderati (tramite il pulsante a forma di cestino) o aggiungere ulteriori profili tramite il tasto in alto a destra della schermata. L'unica limitazione, gestita autonomamente dal sistema, è quella di mantenerne almeno un profilo attivo per evitare problematiche future. Nella \textit{\textbf{profile screen}} si potranno osservare tutte le informazioni relative ai profili (nome, icona, età, peso e genere) e, cliccando sopra uno di essi lo si potrà impostare come profilo attivo, con il quale verranno registrate tutte le attività che verranno svolte. Questa schermata viene trattata come uno StatelessWidget essendo che non dovrà mantenere mutabilità, basandosi interamente sul \textit{ProfileProvider}. In questo modo ogni volta che si modificherà, aggiungerà o eliminerà un profilo la schermata si ricostruirà automaticamente. 
+Per renderizzare l'elenco dei profili si utilizzerà un costrutto ottimizzato di Flutter che creerà i widget solo quando staranno per essere visualizzati a schermo (attuando dunque una procedura di lazy loading). Questo costrutto prende il nome di \textit{ListView.builder} (\ref{profiles_list}) e verificherà inoltre se il profilo interessato sarà attivo o meno, modificando in caso il suo stile, come si può vedere a sinistra della figura \ref{profilescreens}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tabular}{cc}
+\includegraphics[width=0.30\textwidth]{assets/profilivari.jpg} &
+\includegraphics[width=0.30\textwidth]{assets/customprofilo.jpg} \\
+(a) Scelta dei profili nella \textit{profile screen}. & (b) Schermata di personalizzazione profilo.
+\end{tabular}
+\caption{Screenshot delle schermate \textit{profile screen}.}
+\label{profilescreens}
+\end{figure}
+
+\begin{lstlisting}[language=dart, caption={Generazione dinamica della lista contenente i profili salvati.}, label={profiles_list}]
+ListView.builder(
+  itemCount: provider.profiles.length,
+  itemBuilder: (context, index) {
+    final profile = provider.profiles[index];
+    final isActive = profile.id == provider.activeProfile?.id;
+    final isMale = profile.gender == "M";
+    
+    //Ritorno della UI della singola card
+  },
+)
+\end{lstlisting}
+
+Quando verrà cliccato un determinato profilo, come accennato precedentemente, esso verrà impostato come attivo tramite il provider dedicato. Per la modifica invece verrà istanziata una navigazione verso la \textit{ProfileFormScreen} passando come argomento il profilo con tutti i suoi dati per la pre-compilazione della schermata. Per evitare l'appesantimento del codice, la schermata di creazione profilo e modifica profilo sono le medesime con l'unica differenza compresa nel titolo della schermata.
+Tramite il codice di \textit{initState} (presente nel listato \ref{form_init}) verrà valutato se il valore di \textit{widget.profileToEdit} sarà nullo o meno, in base a ciò il sistema deciderà se far apparire la schermata con il titolo di "modifica" o di "creazione".\\
 
 
+\begin{lstlisting}[language=dart, caption={Pre-compilazione dei campi di testo in caso di modifica.}, label={form_init}]
+void initState() {
+  super.initState();
+  _nameCtrl = TextEditingController(text: widget.profileToEdit?.name ?? "");
+  _ageCtrl = TextEditingController(text: widget.profileToEdit?.age.toString() ?? "");
+  _weightCtrl = TextEditingController(text: widget.profileToEdit?.weight.toString() ?? "");
+  
+  if (widget.profileToEdit != null) {
+    _gender = widget.profileToEdit!.gender;
+    _selectedAvatar = widget.profileToEdit!.avatar;
+  }
+}
+\end{lstlisting}
 
+Una volta che la modifica o creazione del profilo sarà stata salvata tramite l'apposito tasto posto in fondo alla schermata, il sistema invocherà un controllo della validazione per ciascun campo di testo per poi formattare i dati e chiamare i metodi \textit{addProfile} (in caso di creazione) o \textit{updateProfile} (in caso di modifica) riportando poi l'utente nella schermata iniziale.
+L'unica schermata rimanente dell'applicazione si chiama \textit{\textbf{tracking screen}} e viene mostrata una volta che l'utente avrà premuto sul tasto "avvia tracking" dopo aver connesso i propri sensori e verificato la disponibilità del server.
 
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.30\textwidth]{assets/trackingscreen.jpeg}
+  \caption{Screenshot della schermata \textit{tracking screen}.}
+  \label{trackingscreen}
+\end{figure}
+Al suo interno verranno gestite diverse logiche come si può notare in figura \ref{trackingscreen} comprendenti: 
+\begin{itemize}
+  \item Un cronometro per indicare all'atleta il tempo trascorso dall'inizio dell'attività.
+  \item Un indicatore relativo al numero di sensori connessi.
+  \item Una lista con tutti i nomi e le icone dei sensori connessi.
+  \item Un indicatore dei battiti per minuto estratti dal cardio-frequenzimetro (se connesso).
+  \item Il nome dell'utente attualmente attivo.
+  \item Una mini-mappa reattiva agli spostamenti e con un indicatore di segnale GPS integrato.
+  \item Un indicatore di disponibilità server (in alto a destra).
+  \item Un pulsante per fermare il tracking, seguito da un avviso di conferma per evitare arresti involontari. 
+\end{itemize}
 
+Quando verrà creata la \textit{tracking screen}, il metodo \textit{initState} avvierà tutte le operazioni in background, lanciando il cronometro, inizializzando i servizi di localizzazione e configurando il cursore indicante la posizione attuale sulla mappa. 
 
+\begin{lstlisting}[language=dart, caption={Inizializzazione dei sistemi di tracking all'apertura della schermata.}, label={tracking_init}]
+void initState() {
+  super.initState();
+  _startTimer();
+  _initHighPrecisionMap();
 
+  _markerAnimController = AnimationController(
+    vsync: this, duration: const Duration(seconds: 2),
+  )..repeat();
+  //Inizializzazione animazione cursore
+}
+\end{lstlisting}
+Affinché il tracciamento del cursore nella mappa in app (e sulla dashboard) sia fluido, il sistema crea un timer che interrogherà il GPS ogni secondo (come si vede nella prima riga dello snippet \ref{tracking_gps_polling}), utilizzando il parametro \textit{LocationAccuracy} impostato su \textit{.bestForNavigation}, il che forzerà iOS (o Android) a fornire il dato sulla posizione più recente e preciso possibile. Una volta che sarà stata ottenuta la coordinata, la mappa si sposterà su tale.
 
+\begin{lstlisting}[language=dart, caption={Richiesta ciclica della posizione GPS ad alta precisione.}, label={tracking_gps_polling}]
+Timer.periodic(const Duration(seconds: 1), (timer) async {
+  if (!mounted) { timer.cancel(); return; }
 
-
-
-
+  try {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.bestForNavigation,
+    );
+    
+    if (mounted) {
+      _lastKnownPosition = position;
+      if (!_hasRealPosition) setState(() => _hasRealPosition = true);
+      _mapController?.animateCamera(
+        CameraUpdate.newLatLng(//Coordinate attuali),
+      );
+    }
+  } catch (e) {//Gestione errore}
+});
+\end{lstlisting}
+Per la gestione del cronometro relativo alla durata dell'attività, al posto di aggiornare il suo valore ogni secondo con una chiamata a \textit{setState} che implicherebbe ri-renderizzare ogni secondo tutte le componenti presenti nella schermata (facendo crollare le prestazioni), il sistema isola questa feature in uno StatelessWidget di piccole dimensioni, ovviando il problema e preservando la fluidità. Quanto l'indicatore in alto a destra della schermata, indicante il possibile raggiungimento o meno del server, esso leggerà il valore \textit{isServerReachable} che eseguirà dei ping continui per poi colorare l'indicatore in base all'esito.
 
 \subsection{Providers}
 \subsection{File main}
