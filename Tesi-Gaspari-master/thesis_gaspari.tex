@@ -591,11 +591,11 @@ Tramite il codice di \textit{initState} (presente nel listato \ref{form_init}) v
 \begin{lstlisting}[language=dart, caption={Pre-compilazione dei campi di testo in caso di modifica.}, label={form_init}]
 void initState() {
   super.initState();
-  _nameCtrl = TextEditingController(text: widget.profileToEdit?.name ?? "");
-  _ageCtrl = TextEditingController(text: widget.profileToEdit?.age.toString() ?? "");
-  _weightCtrl = TextEditingController(text: widget.profileToEdit?.weight.toString() ?? "");
+  _nameCtrl = //validazione nome
+  _ageCtrl = //validazione eta'
+  _weightCtrl = //validazione peso
   
-  if (widget.profileToEdit != null) {
+  if (widget.profileToEdit != null) { //set valori default
     _gender = widget.profileToEdit!.gender;
     _selectedAvatar = widget.profileToEdit!.avatar;
   }
@@ -685,8 +685,77 @@ Future<void> _handleStopTracking() async {
 }
 \end{lstlisting}
 
-
 \subsection{Providers}
+Per evitare il passaggio di numerose quantità di parametri nel codice, in Flutter si utilizzano i provider. Essi agiscono come dei contenitori di dati, che alla variazione di essi, invocheranno il metodo \textit{NotifyListeners} avvisando autonomamente tutti i widget che si sono sottoscritti ad una specifica classe. In tal modo si ricostruiranno solo le porzioni di schermo interessate al cambiamento, mantenendo così fluidità e prestazioni elevate.
+Uno dei due provider fondamentali per il funzionamento dell'hardware esterno all'applicazione è il \textit{Connected Devices Provider}. Esso mantiene nella memoria del dispositivo tutti i sensori precedentemente connessi con il loro nome e la loro icona personalizzata, per poter permettere in caso di future connessione una maggior facilità nel riconoscimento. In questo caso vengono utilizzate delle coppie chiave-valore in cui la chiave è rappresentata dall'indirizzo MAC\footnote{L'indirizzo MAC è un codice univoco di 12 cifre per contraddistinguere varie tipologie di dispositivi.} del dispositivo Bluetooth. In questa maniera la ricerca e l'aggiornamento avranno complessità molto basse, assicurando una reattività elevata. Nel listato \ref{provider_vars} si può anche notare come venga impostato un numero massimo di sei dispositivi collegabili, al fine di evitare instabilità nella comunicazione Bluetooth fra applicazione mobile e sensori. 
+
+\begin{lstlisting}[language=dart, caption={Strutture dati del Provider e limite massimo di connessioni.}, label={provider_vars}]
+class ConnectedDevicesProvider extends ChangeNotifier {
+  final Map<String, String> _deviceNames = {};
+  final Map<String, String> _deviceIcons = {};
+  final Map<String, BluetoothDevice> _connectedDevices = {};
+  
+  static const int maxDevices = 6;
+  int get connectedCount => _connectedDevices.length;
+  bool get canConnectMore => _connectedDevices.length < maxDevices;
+}
+\end{lstlisting}
+Quando verrà avviata la richiesta di connessione verso un nuovo dispositivo hardware, il provider si occuperà di creare un timer impostato a 15 secondi, per attuare un meccanismo di timeout. Se entro questa finestra temporale la connessione Bluetooth Low Energy andrà a buon fine, l'istanza del dispositivo verrà registrata all'interno delle strutture dati in memoria, autorizzando l'applicazione a interagire con esso. Insieme al salvataggio, verrà aperto un canale di ascolto in background. Questo listener avrà il compito cruciale di monitorare costantemente lo stato fisico del collegamento e, qualora il sensore dovesse spegnersi per esaurimento della batteria o uscire dal raggio di copertura utile della radio Bluetooth, il sistema rileverà automaticamente la caduta di connessione. In tal caso, l'applicazione provvederà a rimuovere immediatamente il dispositivo dalla lista dei sensori attivi e invalidando le sottoscrizione ad esso e richiamando infine il metodo \textit{notifyListeners()} (come si osserva nello snippet \ref{provider_connect}).
+
+\begin{lstlisting}[language=dart, caption={Connessione al sensore BLE e registrazione del listener di stato.}, label={provider_connect}]
+Future<void> connectDevice(BluetoothDevice device) async {
+  if (!canConnectMore) //messaggio errore;
+  final deviceId = device.remoteId.toString();
+  
+  await device.connect(timeout: const Duration(seconds: 15));
+  _connectedDevices[deviceId] = device;
+  
+  ...connectionState.listen((state) {
+    if (state == BluetoothConnectionState.disconnected) {
+      _connectedDevices.remove(deviceId);
+      _connectionSubscriptions[deviceId]?.cancel();
+      notifyListeners();
+    }
+  });
+  notifyListeners();
+}
+\end{lstlisting}
+Per quanto riguarda la vera e propria memorizzazione, che permette all'utente utilizzatore di evitare l'assegnazione di nomi ed icone ad ogni apertura dell'app, essa viene gestita tramite dei file JSON. Ogni qualvolta che l'applicazione verrà aperta o chiusa, tutti i dati verranno convertiti in in formato JSON, salvati successivamente sulla memoria non volatile\footnote{Per memoria non volatile si intende un tipo di memoria capace di mantenere i dati anche in assenza di alimentazione continua (utile per archiviazione a lungo termine).} dello smartphone. Un'altra funzionalità fondamentale svolta da questo provider è quella di pulire tutte le connessioni e disconnettere i dispositivi Bluetooth. Infatti quando l'applicazione verrà chiusa o riavviata, il metodo \textit{disconnectAll} (\ref{provider_disconnect_all}) attuerà asincronamente su tutti i sensori connessi, una troncatura pulita del loro socket Bluetooth, cancellandoli momentaneamente dalla memoria. Tramite questa pulizia efficiente si preverranno le perdite di memoria evitando che la comunicazione Bluetooth non venga alterata da precedenti connessioni non chiuse. 
+
+\begin{lstlisting}[language=dart, caption={Procedura asincrona per la disconnessione di tutti i sensori.}, label={provider_disconnect_all}]
+Future<void> disconnectAll() async {
+  for (//ogni device connesso) {
+    final deviceId = device.remoteId.toString();
+    _connectionSubscriptions[deviceId]?.cancel();
+    await device.disconnect();
+  }
+
+  _connectionSubscriptions.clear();
+  _connectedDevices.clear();
+  notifyListeners();
+}
+\end{lstlisting}
+Il secondo provider presente all'interno del codice dedicato all'applicazione prende il nome di \textit{Profile Provider} che, come suggerisce il nome si occuperà di tutta la parte dedicata alla gestione profili, permettendo così la possibilità di scegliere un determinato utente per l'attività che si desidererà svolgere. All'interno di questo provider, si troverà la classe \textit{User Profile} (\ref{profile_model}) che fungerà da DTO\footnote{Un Data Trasnfer Object (DTO) rappresenta un modello di architettura software per trasferire dati tra livelli.}. In essa verranno raccolti tutti i dati dell'atleta che successivamente verranno trasmessi dentro il log dell'attività. Per garantire inoltre, il salvataggio in memoria locale di tutti i profili e la corretta trasmissione alla dashboard web, i profili verranno anch'essi convertiti in file JSON tramite il metodo \textit{toJson}.
+
+\begin{lstlisting}[language=dart, caption={Definizione del modello dati UserProfile e logica di serializzazione JSON.}, label={profile_model}]
+class UserProfile {
+  final String id;
+  String name;
+  int age;
+  String gender; 
+  double weight;
+  String avatar; 
+
+  Map<String, dynamic> toJson() => {
+    'id': id, 'name': name, 'age': age,
+    'gender': gender, 'weight': weight, 'avatar': avatar,
+  };
+}
+\end{lstlisting}
+Tramite il costruttore fromJson si eseguirà l'operazione inversa, ricostruendo un profilo con tutti i suoi dati dal file JSON presente in memoria. Nel caso in cui nella ricostruzione di un determinato profilo non si riesca a recuperare l'avatar, il sistema provvederà ad assegnarne uno di default. 
+
+
+\subsection{Stream manager e file utili}
 \subsection{File main}
 
 
