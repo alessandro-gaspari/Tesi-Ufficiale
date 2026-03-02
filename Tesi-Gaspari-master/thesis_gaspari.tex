@@ -702,7 +702,7 @@ class ConnectedDevicesProvider extends ChangeNotifier {
 \end{lstlisting}
 Quando verrà avviata la richiesta di connessione verso un nuovo dispositivo hardware, il provider si occuperà di creare un timer impostato a 15 secondi, per attuare un meccanismo di timeout. Se entro questa finestra temporale la connessione Bluetooth Low Energy andrà a buon fine, l'istanza del dispositivo verrà registrata all'interno delle strutture dati in memoria, autorizzando l'applicazione a interagire con esso. Insieme al salvataggio, verrà aperto un canale di ascolto in background. Questo listener avrà il compito cruciale di monitorare costantemente lo stato fisico del collegamento e, qualora il sensore dovesse spegnersi per esaurimento della batteria o uscire dal raggio di copertura utile della radio Bluetooth, il sistema rileverà automaticamente la caduta di connessione. In tal caso, l'applicazione provvederà a rimuovere immediatamente il dispositivo dalla lista dei sensori attivi e invalidando le sottoscrizione ad esso e richiamando infine il metodo \textit{notifyListeners()} (come si osserva nello snippet \ref{provider_connect}).
 
-\begin{lstlisting}[language=dart, caption={Connessione al sensore BLE e registrazione del listener di stato.}, label={provider_connect}]
+\begin{lstlisting}[language=dart, caption={Connessione al sensore BLE e registrazione del listener.}, label={provider_connect}]
 Future<void> connectDevice(BluetoothDevice device) async {
   if (!canConnectMore) //messaggio errore;
   final deviceId = device.remoteId.toString();
@@ -722,7 +722,7 @@ Future<void> connectDevice(BluetoothDevice device) async {
 \end{lstlisting}
 Per quanto riguarda la vera e propria memorizzazione, che permette all'utente utilizzatore di evitare l'assegnazione di nomi ed icone ad ogni apertura dell'app, essa viene gestita tramite dei file JSON. Ogni qualvolta che l'applicazione verrà aperta o chiusa, tutti i dati verranno convertiti in in formato JSON, salvati successivamente sulla memoria non volatile\footnote{Per memoria non volatile si intende un tipo di memoria capace di mantenere i dati anche in assenza di alimentazione continua (utile per archiviazione a lungo termine).} dello smartphone. Un'altra funzionalità fondamentale svolta da questo provider è quella di pulire tutte le connessioni e disconnettere i dispositivi Bluetooth. Infatti quando l'applicazione verrà chiusa o riavviata, il metodo \textit{disconnectAll} (\ref{provider_disconnect_all}) attuerà asincronamente su tutti i sensori connessi, una troncatura pulita del loro socket Bluetooth, cancellandoli momentaneamente dalla memoria. Tramite questa pulizia efficiente si preverranno le perdite di memoria evitando che la comunicazione Bluetooth non venga alterata da precedenti connessioni non chiuse. 
 
-\begin{lstlisting}[language=dart, caption={Procedura asincrona per la disconnessione di tutti i sensori.}, label={provider_disconnect_all}]
+\begin{lstlisting}[language=dart, caption={Procedura per la disconnessione di tutti i sensori.}, label={provider_disconnect_all}]
 Future<void> disconnectAll() async {
   for (//ogni device connesso) {
     final deviceId = device.remoteId.toString();
@@ -737,7 +737,7 @@ Future<void> disconnectAll() async {
 \end{lstlisting}
 Il secondo provider presente all'interno del codice dedicato all'applicazione prende il nome di \textit{Profile Provider} che, come suggerisce il nome si occuperà di tutta la parte dedicata alla gestione profili, permettendo così la possibilità di scegliere un determinato utente per l'attività che si desidererà svolgere. All'interno di questo provider, si troverà la classe \textit{User Profile} (\ref{profile_model}) che fungerà da DTO\footnote{Un Data Trasnfer Object (DTO) rappresenta un modello di architettura software per trasferire dati tra livelli.}. In essa verranno raccolti tutti i dati dell'atleta che successivamente verranno trasmessi dentro il log dell'attività. Per garantire inoltre, il salvataggio in memoria locale di tutti i profili e la corretta trasmissione alla dashboard web, i profili verranno anch'essi convertiti in file JSON tramite il metodo \textit{toJson}.
 
-\begin{lstlisting}[language=dart, caption={Definizione del modello dati UserProfile e logica di serializzazione JSON.}, label={profile_model}]
+\begin{lstlisting}[language=dart, caption={Definizione del modello dati UserProfile e serializzazione JSON.}, label={profile_model}]
 class UserProfile {
   final String id;
   String name;
@@ -753,6 +753,48 @@ class UserProfile {
 }
 \end{lstlisting}
 Tramite il costruttore fromJson si eseguirà l'operazione inversa, ricostruendo un profilo con tutti i suoi dati dal file JSON presente in memoria. Nel caso in cui nella ricostruzione di un determinato profilo non si riesca a recuperare l'avatar, il sistema provvederà ad assegnarne uno di default. 
+
+Un importante pattern implementato all'interno del \textit{profile provider} è il \textit{ChangeNotifier} che permette di notificare tutti i widget in ascolto.
+Al suo interno, \textit{ActiveProfile} al posto di restituire una semplice variabile, eseguirà una ricerca all'interno della lista profili tramite un'ID univoco (\textit{activeProfileId}). Se ipoteticamente il profilo selezionato non esistesse più, questa eccezione verrà gestita da un blocco \textit{try-catch} che selezionerà il primo profilo disponibile, evitando così errori vari. Quando si genererà un nuovo profilo di conseguenza si necessiterà di creare anche un ID unico tramite lo standard UUID\footnote{L'Universally Unique Identifier (UUID) è un identificatore univoco universale composto da 128 bit, visualizzato solitamente come una stringa di 36 caratteri esadecimali.}. Se esso risulterà l'unico presente, verrà impostato come profilo attivo salvando lo stato del sistema e notificando la GUI\footnote{Con l'acronimo GUI si indica la Graphic User Interface, ossia l'interfaccia grafica del sistema.} tramite \textit{notifyListeners}.
+
+\begin{lstlisting}[language=dart, caption={Aggiunta di un nuovo utente e generazione dell'identificatore.}, label={profile_add}]
+Future<void> addProfile(//Dati del profilo) async {
+  final newProfile = UserProfile(
+    id: const Uuid().v4(),
+    //Dati del profilo,
+  );
+
+  _profiles.add(newProfile);
+  
+  if (_profiles.length == 1) {
+    _activeProfileId = newProfile.id;
+    //Salvataggio id attivo
+  }
+  await _saveToDisk();
+  notifyListeners();
+}
+\end{lstlisting}
+Nel caso in cui un determinato profilo utente debba essere cancellato, il sistema, per ovviare problemi di instabilità, effettua due controlli di sicurezza (\ref{profile_delete}): 
+\begin{enumerate}
+  \item Il profilo da cancellare non deve essere l'unico presente in memoria, garantendo così di avere sempre almeno un utente attivo.
+  \item Il profilo da cancellare deve essere quello effettivamente selezionato, se sarà così allora verra selezionato come attivo il più vicino ad esso nella lista dei profili e poi il sistema procederà all'eliminazione del desiderato.
+\end{enumerate}
+
+\begin{lstlisting}[language=dart, caption={Eliminazione con protezione dell'ultimo profilo rimanente.}, label={profile_delete}]
+Future<void> deleteProfile(String id) async {
+  if (_profiles.length <= 1) return;
+
+  _profiles.removeWhere((p) => p.id == id);
+  
+  if (_activeProfileId == id) {
+    _activeProfileId = _profiles.first.id;
+    //Salvataggio del nuovo profilo attivo
+  }
+  await _saveToDisk();
+  notifyListeners();
+}
+\end{lstlisting}
+
 
 
 \subsection{Stream manager e file utili}
