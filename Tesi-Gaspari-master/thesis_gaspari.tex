@@ -899,7 +899,72 @@ A seconda del modello del sensore, i dati ricevuti sono composti da pacchetti bi
 In base al protocollo che verrà selezionato, il sistema applicherà una determinata funzione di parsing\footnote{Con il termine parsing si indica un processo di scomposizione e analisi dati in ambito informatico.}. Per ottenere le informazioni presenti all'interno dei byte, verrà sfruttata la funzione \textit{b(i)} che estrarrà il byte in i-esima posizione affinchè venga interpretato come valore senza segno. A seguire, la funzione \textit{s10} convertirà il valore binario in un un intero con segno compreso tra -512 e 512, tramite la sottrazione di 1024 a tutti i valori superiori a 511. In questo modo l'intervallo ottenuto corrisponderà a quello dei sensori, permettendo delle misurazioni accurate e in scala.
 
 \subsection{File main}
+Il punto d'ingresso dell'applicazione mobile è rappresentato dal file \textit{main}, che contiene al suo interno molte componenti indispensabili per il sistema. Una di queste è il costrutto \textit{MultiProvider} che, venendo istanziato al vertice di tutti i widget, permette a tutte le schermate di ottenere e leggere liberamente i dati relativi a:
+\begin{itemize}
+  \item Hardware
+  \item Streaming
+  \item Profili di atleti
+\end{itemize}
+senza dover necessariamente passare alcun tipo di parametro. Ciò è reso possibile anche dall'impostazione del parametro \textit{lazy: false} che forzerà la creazione dei gestori ancor prima che le schermate appaiano, favorendo così il caricamento preliminare dei dati. 
 
+\begin{lstlisting}[language=dart, caption={Implementazione del MultiProvider nel livello più alto del widget tree.}, label={main_providers}]
+MultiProvider(
+  providers: [
+    ChangeNotifierProvider(
+      create: (context) => ConnectedDevicesProvider(),
+      lazy: false,
+    ),
+    ChangeNotifierProvider(
+      create: (context) => StreamingManager(),
+      lazy: false,
+    ),
+    ChangeNotifierProvider(
+      create: (context) => ProfileProvider(),
+      lazy: false, 
+    ), ],
+//... );
+\end{lstlisting}
+All'interno del file \textit{main} verrà anche creato il tema utilizzato in tutta l'applicazione, in modo da non doverlo riprogrammare per ogni schermata. Tramite l'oggetto \textit{ThemeData} l'applicazione verrà automaticamente impostata in modalità scura (\textit{Brightness.dark}) facendo risaltare così il verde ripreso dal logo Sensoria. Questo permetterà da un lato di mantenere un codice pulito e corto, dall'altro di garantire la visibilità all'atleta anche sotto la luce del sole, grazie all'elevato contrasto tra sfondo scuro e testi verde brillante.
+
+\begin{lstlisting}[language=dart, caption={Creazione del tema e dei colori.}, label={main_theme}]
+theme: ThemeData(
+  //...
+  brightness: Brightness.dark,
+  primaryColor: const Color.fromRGBO(151, 201, 62, 1),
+  scaffoldBackgroundColor: const Color(0xFF0F0F0F),
+  
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Color(0xFF1A1A1A),
+    // ...
+  ),
+  
+  elevatedButtonTheme: ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color.fromRGBO(151, 201, 62, 1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+  ), ), ), )
+\end{lstlisting}
+L'ultimo snippet rilevante del file \textit{main} (\ref{main_routing}) si occupa di implementare la componente \textit{AuthCheckWrapper} che valuterà lo stato dell'utente seguendo tre passi logici:
+\begin{enumerate}
+  \item Se il sistema è ancora impegnato nella decodifica dei file JSON, verrà mostrata sullo schermo un'icona di caricamento.
+  \item Una volta che il caricamento sarà terminato, se il database locale dello smartphone risulterà vuoto, il sistema forzerà la reinderizzazione verso la schermata di creazione profili.
+  \item In caso di effetiva presenza di profili utente nel database, l'interfaccia si sbloccherà e verrà concesso l'accesso alla schermata base (\textit{MainWrapperScreen}). 
+\end{enumerate}
+\begin{lstlisting}[language=dart, caption={Indirizzamento basato sullo stato di caricamento e sui profili esistenti.}, label={main_routing}]
+Widget build(BuildContext context) {
+  //...
+  if (profileProvider.isLoading) {
+      //Mostra icona di caricamento
+  }
+
+  if (profileProvider.profiles.isEmpty) {
+    return const ProfileFormScreen(); 
+  }
+
+  return const MainWrapperScreen();
+}
+\end{lstlisting}
 
 \section{Sviluppo della dashboard web}
 \section{Esempi d'uso}
