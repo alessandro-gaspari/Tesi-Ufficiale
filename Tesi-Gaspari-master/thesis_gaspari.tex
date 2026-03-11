@@ -967,6 +967,30 @@ Widget build(BuildContext context) {
 \end{lstlisting}
 
 \section{Sviluppo della dashboard web}
+La dashboard web è composta da un backend implementato in Python nel file \textit{app.py} e da un frontend che racchiude un file CSS, un file HTML e un file JavaScript. Il backend avrà il compito di ricevere ed organizzare tutti i dati provenienti dall'applicazione, mentre il frontend si occuperà della visualizzazione interattiva in tempo reale e di tutte le funzionalità avanzate presenti sul sito, come replay, card animate, mappa interattiva...
+
+\subsection{Backend}
+Il file responsabile dell'intero backend è \textit{app.py} che aprirà Flask in combinazione a Socket.IO, collegandosi via SSH\footnote{Secure Shell (SSH) è un protocollo di rete che permette ad un utente di controllare un server remoto in maniera sicura.} al server remoto per leggere in tempo reale i file di log generati e trasformandoli in eventi per il browser. Per accedere al server su cui sono memorizzati i log (\textit{lambda-iot.uniud.it}) il backend crea un tunnel SSH (come si osserva nell'estratto di codice \ref{ssh_setup}) tramite la libreria \textit{paramiko} che permette di stabilire connessioni sicure verso host remoti. Per garantire una maggior sicurezza la variabile SSH\_PASSWORD, credenziale indispensabile per accedere al server su cui sono registrati i log, viene direttamente impostata su Render, prevenendo così che essa possa essere divulgata. 
+
+\begin{lstlisting}[language=Python, caption={Configurazione del client SSH tramite Paramiko}, label={ssh_setup}]
+import paramiko
+SSH_HOST = "lambda-iot.uniud.it"
+SSH_USER = "gaspari"
+REMOTE_LOG_DIR = "/home/gaspari/data/"
+
+def create_ssh_client():
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(SSH_HOST, port=22729, username=SSH_USER, 
+                   password=os.environ.get("SSH_PASSWORD"), timeout=10)
+    return client
+\end{lstlisting}
+Per evitare crash del server dovuti ad eccezioni non gestite causate da latenze o corruzioni di dati nei log, in questo file viene implementato un parser\footnote{Con il termine parser si indica un algoritmo che analizza una sequenza di dati per verificare la loro correttezza, strutturandoli in formati più leggibili.} che cercherà autonomamente l'apertura e la chiusura delle strutture JSON all'interno delle righe.
+
+
+
+\subsection{Frontend}
+
 \section{Esempi d'uso}
 
 
