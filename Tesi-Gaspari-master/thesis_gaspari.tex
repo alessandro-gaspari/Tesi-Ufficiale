@@ -335,7 +335,14 @@ Come si può osservare nella figura \ref{render}, la prima istruzione che verrà
 \chapter{Implementazione}
 
 \section{Introduzione}
-Nel seguente capitolo verranno analizzate nel dettaglio tutte le parti di codice significative per la realizzazione dell'applicazione mobile e della dashboard web, commentando ed esplicando attentamente ogni funzionalità. Partendo da una visione generale del complesso sistemistico si giungerà dunque a degli approfondimenti sulle varie componenti. Verranno mostrati esempi pratici, snapshot di codice e screenshot delle interfacce, al fine di fornire una comprensione chiara del funzionamento del sistema e delle scelte progettuali adottate. L'obiettivo non è solo descrivere come il sistema sia stato implementato, ma anche motivare le scelte tecniche e metodologiche dietro ogni soluzione adottata. 
+Nel seguente capitolo verranno analizzate nel dettaglio tutte le parti di codice significative per la realizzazione dell'applicazione mobile e della dashboard web, commentando ed esplicando attentamente ogni funzionalità. Partendo da una visione generale del complesso sistemistico si giungerà dunque a degli approfondimenti sulle varie componenti. Verranno mostrati esempi pratici, snapshot di codice e screenshot delle interfacce, al fine di fornire una comprensione chiara del funzionamento del sistema e delle scelte progettuali adottate. L'obiettivo non è solo descrivere come il sistema sia stato implementato, ma anche motivare le scelte tecniche e metodologiche dietro ogni soluzione adottata. Di seguito nella figura \ref{flusso_schermate}\footnote{La sezione tratteggiata indica il flusso che l'applicazione segue al primo avvio.} si può osservare uno schema di flusso tra le diverse schermate dell'applicazione.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{assets/INIZIO.png}
+    \caption{Schema di flusso direzionale tra le schermate dell'applicazione.}
+    \label{flusso_schermate}
+\end{figure}
+
 
 \section{Sviluppo dell'applicazione mobile}
 \subsection{File di configurazione}
@@ -985,11 +992,74 @@ def create_ssh_client():
                    password=os.environ.get("SSH_PASSWORD"), timeout=10)
     return client
 \end{lstlisting}
-Per evitare crash del server dovuti ad eccezioni non gestite causate da latenze o corruzioni di dati nei log, in questo file viene implementato un parser\footnote{Con il termine parser si indica un algoritmo che analizza una sequenza di dati per verificare la loro correttezza, strutturandoli in formati più leggibili.} che cercherà autonomamente l'apertura e la chiusura delle strutture JSON all'interno delle righe.
+Per evitare crash del server dovuti ad eccezioni non gestite causate da latenze o corruzioni di dati nei log, in questo file viene implementato un parser\footnote{Con il termine parser si indica un algoritmo che analizza una sequenza di dati per verificare la loro correttezza, strutturandoli in formati più leggibili.} che cercherà autonomamente l'apertura e la chiusura delle strutture JSON all'interno delle righe. Essendo che la quantità di dati che giunge al server è elevata, il sistema di monitoraggio adotta una soluzione tramite la lettura incrementale, in maniera tale da non rileggere numerose righe a vuoto ma solamente di leggere quanti byte nuovi verranno scritti nell'ultimo secondo. Ad ogni ciclo, come si nota nell'algoritmo della soluzione proposta \ref{backend_live_tail}, confronterà la dimensione del file di log attuale con quella registrata nel ciclo precedente, estraendo solamente i nuovi byte aggiunti (\textit{new\_bytes}), evitando ridondanze e permettendo così la gestione di dati ad alta frequenza.
 
+\begin{lstlisting}[language=Python, caption={Algoritmo di lettura incrementale.}, label={backend_live_tail}]
+if stat.st_size > last_file_size:
+    #Calcolo dei nuovi byte
+    new_bytes = stat.st_size - last_file_size
+    new_data = remote_file.read(new_bytes)
+    
+    #Aggiornamento del puntatore
+    last_file_size = stat.st_size
 
+    #Decodifica del segmento
+    chunk_text = new_data.decode("utf-8", errors="ignore")
+\end{lstlisting}
+Una volta che verranno letti tutti i dati, essi dovranno giungere alla pagina web. Per far ciò, il backend una volta finita l'estrazione, agirà come dispatcher svolgendo le seguenti funzioni:
+\begin{itemize}
+  \item Classificazione dei pacchetti (battiti cardiaci, segnali GPS o altro).
+  \item Aggiornamento dello stato del server.
+  \item Comunicazione in broadcast (tramite Flask-SocketIO) di tutti gli eventi.
+\end{itemize}
 
+\begin{lstlisting}[language=python, caption={Classificazione dei pacchetti e broadcast degli eventi.}, label={backend_socket_emit}]
+if "bpm" in data or "heart_rate" in data:
+    val = int(data.get("bpm", data.get("heart_rate")))
+    last_bpm_data = val
+    socketio.emit("bpmupdate", val)
+
+elif "accel_x" in data or "pressure_0" in data:
+    s_name = data.get("sensorname", "Unknown")
+    norm = _normalize_sensor_fields(data)
+    sensors_data[s_name] = norm
+    socketio.emit("sensorupdate", {"sensorname": s_name, "data": norm})
+\end{lstlisting}
 \subsection{Frontend}
+Come citato precedentemente, il frontend del sito è composto da tre file principali: un file HTML, un file CSS e un file JavaScript. Il file \textit{dashboard.html} definirà la struttura visiva della dashboard. La libreria più importante all'interno di questo file si chiama \textit{uPlot} e permette un tracciamento grafico dei dati storici in tempo reale senza sovraccaricare eccessivamente la CPU del browser, rendendo l'esperienza di visualizzazione grafici fluida e reattiva. Prima di poter effettivamente ricevere i dati, all'interno dell'interfaccia vi saranno dei placeholder ("--") che prenderanno il posto dei veri e propri dati finché essi non giungeranno alla dashboard, evitando così che le logiche JavaScript abbiano i parametri necessari (anche se fittizi). 
+
+\begin{lstlisting}[language=HTML, caption={Preparazione della dashboard.}, label={html_profile}]
+<div class="dashboard-title" aria-label="Sensoria">
+    <div id="profile-header">
+        <div id="profile-name-header"> -- </div>
+        <div id="profile-meta-header">Peso -- kg  Eta' -- </div>
+    </div>
+</div>
+\end{lstlisting}
+Affinché sulla dashboard fosse subito chiaro quali fossero le componenti dei sensori montati sull'arto sinistro piuttosto che su quello destro, l'HTML è stato diviso in due colonne. In questo modo l'utente che dovrà analizzare i dati dell'atleta realizzerà istantaneamente quali dati corrisponderanno a quale arto, individuando più facilmente anche eventuali asimmetrie nei Bongiorno index o nelle pressioni plantari. \\
+
+\begin{lstlisting}[language=HTML, caption={Struttura di una colonna (destra) in HTML.}, label={html_biomechanics}]
+<div class="right-col">
+    <div class="panel-card sock-card">
+        <div class="panel-title">Pressioni Calzino dx</div>
+        <div id="chart-right-p" class="pressure-mini-chart"></div>
+    </div>
+</div>
+\end{lstlisting}
+Per evitare infine che i layout entrino in collisione tra loro durante le fasi di monitoraggio e di pre-monitoraggio, il sistema utilizza il blocco (\textit{empty-state})all'interno del file HTML. Questo permetterà di informare subito l'utente in caso di assenza di streaming e, successivamente, non appena il file JavaScript otterrà la prima serie di dati valida (\textit{sensors-grid}) l'avviso verrà nascosto autonomamente proseguendo con la normale visualizzazione dei dati. 
+\begin{lstlisting}[language=HTML, caption={Visualizzazione dello stato di attesa prima dell'inizio dello streaming.}, label={html_empty_state}]
+<section class="raw-section" aria-label="Dati raw sensori">
+    <div class="raw-title">DATI RAW</div>
+    <div id="sensors-grid" aria-label="Griglia sensori"></div>
+    
+    <div id="empty-state">
+        <h2>Nessun sensore connesso</h2>
+        <p>In attesa dei dati dai dispositivi</p>
+    </div>
+</section>
+\end{lstlisting}
+
+
 
 \section{Esempi d'uso}
 
