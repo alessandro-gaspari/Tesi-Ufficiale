@@ -397,7 +397,7 @@ if (_formKey.currentState!.validate()) {
   // salvataggio dati
 }
 \end{lstlisting}
-Al di sotto di essi si troveranno due card colorate dedicate alla scelta del genere, e una lista di avatar tra cui poter scegliere la preferita, assicurando così un'esperienza di personalizzazione minimale ma completa all'utente. A concludere la pagina è presente il pulsante di salvataggio, il quale consente la memorizzazione dei dati inseriti all’interno di una struttura persistente gestita dal provider.
+Al di sotto di essi si troveranno due card colorate dedicate alla scelta del genere, e una lista di avatar tra cui poter scegliere la preferita, assicurando così un'esperienza di personalizzazione minimale ma completa all'utente. A concludere la pagina è presente il pulsante di salvataggio, il quale consente la memorizzazione dei dati inseriti all’interno di una struttura gestita dal provider. La schermata di creazione e modifica del profilo è stata progettata come componente riutilizzabile, permettendo di distinguere automaticamente tra inserimento di un nuovo profilo e aggiornamento di uno esistente, riducendo la duplicazione del codice e migliorando la gestione dell’applicazione.
 
 \begin{lstlisting}[language=dart, caption={Creazione o modifica di un profilo utente.}, label={saveprofile}]
 if (widget.profileToEdit == null) {
@@ -406,9 +406,9 @@ if (widget.profileToEdit == null) {
   provider.updateProfile(id, name, age, gender, weight, avatar);
 }
 \end{lstlisting}
-La schermata di creazione e modifica del profilo è stata progettata come componente riutilizzabile, permettendo di distinguere automaticamente tra inserimento di un nuovo profilo e aggiornamento di uno esistente, riducendo la duplicazione del codice e migliorando la gestione dell’applicazione.
 
-Una volta creato il profilo utente e validato i suoi dati, l'applicazione si spostera autonomamente alla seconda schermata, ossia la \textit{\textbf{scanner screen}}. Essa viene trattata come uno StatefulWidget, (\ref{caratteristichetecniche}) essendo che dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
+
+Una volta creato il profilo utente e validato i suoi dati, l'applicazione si spostera autonomamente alla seconda schermata, ossia la \textit{\textbf{scanner screen}}. Essa viene trattata come uno StatefulWidget (\ref{caratteristichetecniche}), essendo che dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
 \begin{figure}[htbp]
 \centering
 \begin{tabular}{cc}
@@ -430,7 +430,7 @@ class ScannerScreen extends StatefulWidget {
 \end{lstlisting}
 Nel codice che la compone si trovano numerose variabili di stato indicanti informazioni necessarie all'applicazione per evitare di eseguire operazioni nel caso in cui lo stato non sia quello previsto. Alcune di esse, visionabili nel frammento di codice \ref{scanner_vars}, includono la lista dei dispositivi Sensoria rilevati (a seguito di un previo filtraggio tra tutti i dispositivi Bluetooth), lo stato della scansione, le condizioni del modulo BLE e del GPS, oltre ai dati di un eventuale cardio-frequenzimetro connesso.
 
-\begin{lstlisting}[language=dart, caption={Variabili di stato della schermata.}, label={scanner_vars}]
+\begin{lstlisting}[language=dart, caption={Variabili di stato della \textit{scanner screen}.}, label={scanner_vars}]
 List<ScanResult> _sensoriaDevices = [];
 bool _isScanning = false; 
 BluetoothAdapterState _adapterState = BluetoothAdapterState.unknown;
@@ -707,11 +707,14 @@ class ConnectedDevicesProvider extends ChangeNotifier {
   bool get canConnectMore => _connectedDevices.length < maxDevices;
 }
 \end{lstlisting}
-Quando verrà avviata la richiesta di connessione verso un nuovo dispositivo hardware, il provider si occuperà di creare un timer impostato a 15 secondi, per attuare un meccanismo di timeout. Se entro questa finestra temporale la connessione Bluetooth Low Energy andrà a buon fine, l'istanza del dispositivo verrà registrata all'interno delle strutture dati in memoria, autorizzando l'applicazione a interagire con esso. Insieme al salvataggio, verrà aperto un canale di ascolto in background. Questo listener avrà il compito cruciale di monitorare costantemente lo stato fisico del collegamento e, qualora il sensore dovesse spegnersi per esaurimento della batteria o uscire dal raggio di copertura utile della radio Bluetooth, il sistema rileverà automaticamente la caduta di connessione. In tal caso, l'applicazione provvederà a rimuovere immediatamente il dispositivo dalla lista dei sensori attivi e invalidando le sottoscrizione ad esso e richiamando infine il metodo \textit{notifyListeners()} (come si osserva nello snippet \ref{provider_connect}).
+Quando verrà avviata la richiesta di connessione verso un nuovo dispositivo hardware, il provider si occuperà di creare un timer impostato a 15 secondi, per attuare un meccanismo di timeout. Se entro questa finestra temporale la connessione Bluetooth Low Energy andrà a buon fine, l'istanza del dispositivo verrà registrata all'interno delle strutture dati in memoria, autorizzando l'applicazione a interagire con esso. Insieme al salvataggio, verrà aperto un canale di ascolto in background. Questo listener avrà il compito cruciale di monitorare costantemente lo stato fisico del collegamento e, qualora il sensore dovesse spegnersi per esaurimento della batteria o uscire dal raggio di copertura utile della radio Bluetooth, il sistema rileverà automaticamente la caduta di connessione. In tal caso, l'applicazione provvederà a rimuovere immediatamente il dispositivo dalla lista dei sensori attivi e invalidando le sottoscrizione ad esso e richiamando infine il metodo \textit{notifyListeners} (come si osserva nello snippet \ref{provider_connect}).
 
 \begin{lstlisting}[language=dart, caption={Connessione al sensore BLE e registrazione del listener.}, label={provider_connect}]
 Future<void> connectDevice(BluetoothDevice device) async {
-  if (!canConnectMore) //messaggio errore;
+  if (!canConnectMore) {
+    //messaggio errore
+  }
+
   final deviceId = device.remoteId.toString();
   
   await device.connect(timeout: const Duration(seconds: 15));
@@ -736,7 +739,6 @@ Future<void> disconnectAll() async {
     _connectionSubscriptions[deviceId]?.cancel();
     await device.disconnect();
   }
-
   _connectionSubscriptions.clear();
   _connectedDevices.clear();
   notifyListeners();
@@ -752,7 +754,6 @@ class UserProfile {
   String gender; 
   double weight;
   String avatar; 
-
   Map<String, dynamic> toJson() => {
     'id': id, 'name': name, 'age': age,
     'gender': gender, 'weight': weight, 'avatar': avatar,
@@ -826,7 +827,7 @@ Il secondo metodo presente è \textit{sendData} e rappresenta un tassello fondam
 \end{enumerate}
 
 \begin{lstlisting}[language=dart, caption={Gestione della trasmissione ad alta frequenza.}, label={tcp_send}]
-Future<void> sendData(String sensorName, Map<String, dynamic> data) async {
+Future<void> sendData(//Nome del sensore e dati) async {
   if (!_isConnected) {
     if (!_isConnecting) await connect();
     else return; 
@@ -847,9 +848,9 @@ Future<void> sendData(String sensorName, Map<String, dynamic> data) async {
 \end{lstlisting}
 Per la gestione della chiusura (imprevista o non) del canale il sistema sfrutterà il metodo \textit{handleDisconnection}. Al suo interno sarà presente una chiamata alla funzione \textit{destroy} che assicurerà la chiusura del socket, liberando memoria e impedendo all'utente di inviare dati ad uno stream chiuso.
 
-Procedendo con l'analisi dei file necessari alla trasmissione, lo \textit{streaming manager} ricopre un ruolo fondamentale. Con esso viene esteso \textit{ChangeNotifier}, coordinando tutte le diverse streaming di dati diversi (BLE, GPS, IMU). Tutte le schermate che necessiteranno di dati in tempo reale si iscriveranno allo \textit{streaming manager} ricevendo aggiornamenti sui dati alla fine di ogni ciclo. All'interno di questo file si trovano anche delle costanti rappresentanti i limiti delle capacità biomeccaniche degli atleti, come si può osservare in figura \ref{sm_vars}. Come velocità massima è stata scelta circa 60 km/h, permettendo così di filtrare eventuali rumori GPS che restituirebbero velocità anormali.
+Procedendo con l'analisi dei file necessari alla trasmissione, lo \textit{streaming manager} ricopre un ruolo fondamentale. Con esso viene esteso \textit{ChangeNotifier}, coordinando tutte le diverse streaming di dati diversi (BLE, GPS, IMU). Tutte le schermate che necessiteranno di dati in tempo reale si iscriveranno allo \textit{streaming manager} ricevendo aggiornamenti sui dati alla fine di ogni ciclo. All'interno di questo file si trovano anche delle costanti rappresentanti i limiti delle capacità biomeccaniche degli atleti, come si può osservare in figura \ref{sm_vars}. Per la velocità massima è stata scelta una soglia di circa 58 km/h, permettendo così di filtrare eventuali rumori GPS che restituirebbero velocità anormali.
 
-\begin{lstlisting}[language=dart, caption={Strutture dati principali e costanti per parametri.}, label={sm_vars}]
+\begin{lstlisting}[language=dart, caption={Costanti per il monitoraggio.}, label={sm_vars}]
 class StreamingManager extends ChangeNotifier {
   static const int TARGET_HZ = 100;
   static const double MAX_REALISTIC_SPEED_MPS = 18.0; //58 km/h
@@ -875,11 +876,11 @@ La combinazione adottata prevede:
 
   //Filtro 2: Timestamp duplicato
   if (_lastGpsTimestamp != null) {
-    final dt = position.timestamp.difference(_lastGpsTimestamp!).inMilliseconds;
+    final dt = //Differenza fra i timestamp degli ultimi due dati
     if (dt < MIN_TIME_DELTA_MS) return;
   }
   
-  //Filtro 3: Velocita'/accelerazione anormale
+  //Filtro 3: Velocita' anormale
   if (_lastValidGpsPosition != null) {
     final instantSpeed = distance / timeDeltaSec;
     if (instantSpeed > MAX_REALISTIC_SPEED_MPS) return;
@@ -891,8 +892,8 @@ Una volta che verranno superati i tre filtri, la posizione viene smussata con un
 \begin{lstlisting}[language=dart, caption={Filtro complementare per levigare la traiettoria GPS.}, label={sm_gps_smooth}]
 final alpha = (position.accuracy / MIN_ACCURACY_THRESHOLD).clamp(0.5, 0.9);
 final smoothedPosition = Position(
-  latitude: alpha * position.latitude + (1.0 - alpha) * //ultima latitudine
-  longitude: alpha * position.longitude + (1.0 - alpha) * //ultima longitudine
+  latitude: //ultima latitudine smussata
+  longitude: //ultima longitudine smussata
   accuracy:  position.accuracy,
   speed: _estimatedSpeed, //Velocita' filtrata
   //...
@@ -900,8 +901,8 @@ final smoothedPosition = Position(
 \end{lstlisting}
 A seconda del modello del sensore, i dati ricevuti sono composti da pacchetti binari di diversa struttura. Il sistema implementa quindi un auto-rilevamento incrociando il nome BLE e la lunghezza in byte del pacchetto ricevuto. Nel caso dei dispositivi Sensoria i protocolli utilizzati comprendono:
 \begin{itemize}
-  \item F20: associato ai sensori Core montati sul ginocchio (20 byte con 9 gradi di libertà senza sensori di pressione)
-  \item H20: associato ai calzini smart (uguali ai sensori core in aggiunta a 3)
+  \item F20: associato ai sensori Core montati sul ginocchio (20 byte con 9 gradi di libertà senza sensori di pressione).
+  \item H20: associato ai calzini smart (uguali ai sensori core in aggiunta a 3 rilevatori di pressione).
 \end{itemize}
 In base al protocollo che verrà selezionato, il sistema applicherà una determinata funzione di parsing\footnote{Con il termine parsing si indica un processo di scomposizione e analisi dati in ambito informatico.}. Per ottenere le informazioni presenti all'interno dei byte, verrà sfruttata la funzione \textit{b(i)} che estrarrà il byte in i-esima posizione affinchè venga interpretato come valore senza segno. A seguire, la funzione \textit{s10} convertirà il valore binario in un un intero con segno compreso tra -512 e 512, tramite la sottrazione di 1024 a tutti i valori superiori a 511. In questo modo l'intervallo ottenuto corrisponderà a quello dei sensori, permettendo delle misurazioni accurate e in scala.
 
@@ -1046,20 +1047,17 @@ Affinché sulla dashboard fosse subito chiaro quali fossero le componenti dei se
     </div>
 </div>
 \end{lstlisting}
-Per evitare infine che i layout entrino in collisione tra loro durante le fasi di monitoraggio e di pre-monitoraggio, il sistema utilizza il blocco (\textit{empty-state})all'interno del file HTML. Questo permetterà di informare subito l'utente in caso di assenza di streaming e, successivamente, non appena il file JavaScript otterrà la prima serie di dati valida (\textit{sensors-grid}) l'avviso verrà nascosto autonomamente proseguendo con la normale visualizzazione dei dati. 
+Per evitare infine che i layout entrino in collisione tra loro durante le fasi di monitoraggio e di pre-monitoraggio, il sistema utilizza il blocco (\textit{empty-state}) all'interno del file HTML. Questo permetterà di informare subito l'utente in caso nel caso in cui lo streaming dati fosse assente e, successivamente, quando il file JavaScript otterrà la prima serie di dati valida (\textit{sensors-grid}) l'avviso verrà nascosto autonomamente proseguendo con la normale visualizzazione dei dati. 
 \begin{lstlisting}[language=HTML, caption={Visualizzazione dello stato di attesa prima dell'inizio dello streaming.}, label={html_empty_state}]
 <section class="raw-section" aria-label="Dati raw sensori">
     <div class="raw-title">DATI RAW</div>
     <div id="sensors-grid" aria-label="Griglia sensori"></div>
-    
     <div id="empty-state">
         <h2>Nessun sensore connesso</h2>
         <p>In attesa dei dati dai dispositivi</p>
     </div>
 </section>
 \end{lstlisting}
-
-
 
 \section{Esempi d'uso}
 
