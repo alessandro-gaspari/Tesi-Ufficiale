@@ -335,7 +335,7 @@ Come si può osservare nella figura \ref{render}, la prima istruzione che verrà
 \chapter{Implementazione}
 
 \section{Introduzione}
-Nel seguente capitolo verranno analizzate nel dettaglio tutte le parti di codice significative per la realizzazione dell'applicazione mobile e della dashboard web, commentando ed esplicando attentamente ogni funzionalità. Partendo da una visione generale del complesso sistemistico si giungerà dunque a degli approfondimenti sulle varie componenti. Verranno mostrati esempi pratici, snapshot di codice e screenshot delle interfacce, al fine di fornire una comprensione chiara del funzionamento del sistema e delle scelte progettuali adottate. L'obiettivo non è solo descrivere come il sistema sia stato implementato, ma anche motivare le scelte tecniche e metodologiche dietro ogni soluzione adottata. Di seguito nella figura \ref{flusso_schermate}\footnote{La sezione tratteggiata indica il flusso che l'applicazione segue al primo avvio.} si può osservare uno schema di flusso tra le diverse schermate dell'applicazione.
+Nel seguente capitolo verranno analizzate nel dettaglio tutte le parti di codice significative per la realizzazione dell'applicazione mobile e della dashboard web, commentando ed esplicando in modo dettagliato ogni funzionalità. Partendo da una visione generale del complesso sistemistico si giungerà dunque a degli approfondimenti sulle varie componenti. Verranno mostrati esempi pratici, snapshot di codice e screenshot delle interfacce, al fine di fornire una comprensione chiara del funzionamento del sistema e delle scelte progettuali adottate. L'obiettivo non è solo descrivere come il sistema sia stato implementato, ma anche motivare le scelte tecniche e metodologiche dietro ogni soluzione adottata. Di seguito nella figura \ref{flusso_schermate}\footnote{La sezione tratteggiata indica il flusso che l'applicazione segue al primo avvio.} è presente uno schema di flusso raffigurante l'ordine secondo il quale appariranno le schermate.
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{assets/INIZIO.png}
@@ -359,7 +359,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 \end{lstlisting}
 
-Al suo interno troveremo tutte le dipendenze necessarie a flutter, la versione dell'ambiente di sviluppo, il nome e la descrizione dell'applicazione, insieme anche all'impostazione dell'icona. Tra le varie dipendenze, come possiamo notare nel listato \ref{pubspec} troviamo librerie dedicate a:
+Al suo interno troveremo tutte le dipendenze necessarie a Flutter, la versione dell'ambiente di sviluppo, il nome e la descrizione dell'applicazione, insieme anche all'impostazione dell'icona. Tra le varie dipendenze, come possiamo notare nel listato \ref{pubspec} troviamo librerie dedicate a:
 
 \begin{itemize}
     \item Organizzazione delle icone interne all'applicazione.
@@ -368,10 +368,10 @@ Al suo interno troveremo tutte le dipendenze necessarie a flutter, la versione d
     \item Inizializzazione dei socket. 
     \item Esecuzione delle funzioni relative all'app in background.
 \end{itemize}
-Tra gli altri numerosi file di configurazione, molti dei quali poco rilevanti all'analisi, troviamo due ulteriori codici importanti per la corretta esecuzione su Android e iOS. Essi, infatti, sono rispettivamente \textit{AndroidManifest.xml} e \textit{Info.plist}. Al loro interno ci saranno essenzialmente le stesse configurazioni essendo che su entrambi i sistemi operativi si necessiterà di ottenere delle autorizzazioni dal dispositivo per poter far utilizzare l'applicazione. Queste autorizzazioni riguarderanno, similarmente a quanto visto precedentemente nel file \textit{pubspec.yaml}, Bluetooth, geolocalizzazione, esecuzione in background e altri requisiti per l'interfaccia utente.  
+Tra gli altri numerosi file di configurazione, molti dei quali poco rilevanti all'analisi, troviamo due ulteriori codici importanti per la corretta esecuzione su Android e iOS. Essi, infatti, sono rispettivamente \textit{AndroidManifest.xml} e \textit{Info.plist}. Al loro interno ci saranno essenzialmente le stesse configurazioni poiché su entrambi i sistemi operativi si necessiterà di ottenere delle autorizzazioni dal dispositivo per poter far utilizzare l'applicazione. Queste autorizzazioni riguarderanno, similarmente a quanto visto precedentemente nel file \textit{pubspec.yaml}, Bluetooth, geolocalizzazione, esecuzione in background e altri requisiti per l'interfaccia utente.  
 
 \subsection{Schermate}
-Flutter organizza il complesso del codice dividendolo in più schermate, ognuna delle quali viene collegata alle altre per far sì che ci si possa spostare comodamente tra di esse. La prima schermata che in questo progetto si visualizzerà una volta aperta l'app per la prima volta sarà la \textit{\textbf{profile screen}}, per far si che l'utente possa creare il suo profilo inserendo i suoi dati.
+Flutter organizza il complesso del codice dividendolo in più schermate, ognuna delle quali viene collegata alle altre per far sì che ci si possa spostare comodamente tra di esse. La prima schermata che in questo progetto si visualizzerà, nel caso in cui l'app verrà aperta per la prima volta, sarà la \textit{\textbf{profile screen}}, per far sì che l'utente possa creare il suo profilo inserendo i suoi dati.
 
 \begin{figure}[htbp]
 \centering
@@ -408,7 +408,7 @@ if (widget.profileToEdit == null) {
 \end{lstlisting}
 
 
-Una volta creato il profilo utente e validato i suoi dati, l'applicazione si spostera autonomamente alla seconda schermata, ossia la \textit{\textbf{scanner screen}}. Essa viene trattata come uno StatefulWidget (\ref{caratteristichetecniche}), essendo che dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
+Una volta creato il profilo utente e validato i suoi dati, l'applicazione si sposterà autonomamente alla seconda schermata, ossia la \textit{\textbf{scanner screen}}. Essa viene trattata come uno StatefulWidget (\ref{caratteristichetecniche}), poiché dovrà gestire dinamicamente tutte le informazioni che riceverà. Al suo interno verranno implementate varie funzionalità quali scansioni Bluetooth, accesso alle schermate successive, stato del GPS e qualità del segnale. 
 \begin{figure}[htbp]
 \centering
 \begin{tabular}{cc}
@@ -564,7 +564,7 @@ String _getDeviceEmoji() {
 
 Terminata la procedura di personalizzazione, i nuovi dati relativi al sensore verranno subito salvati, forzando poi la ricostruzione dell'entità relativa al sensore per sovrascrivere i dati e aggiornare le informazioni a schermo. Quando l'utente si riterrà soddisfatto potrà comodamente tornare alla \textit{scanner screen} semplicemente premendo il tasto apposito posto in alto a sinistra nelle immagini \ref{detailscreens}, il che invocherà un \textit{dispose} che cancellerà le sottoscrizioni in ascolto dello stato di connessione relative al sensore preso in considerazione. 
 
-L'ultima schermata dell'applicazione accessibile prima di effettuare il tracciamento sarà quella dedicata ai profili, precedentemente utilizzata al primo avvio dell'applicazione. Tramite i pulsanti dedicati in essa si potranno modificare i profili esistenti (cliccando sul tasto a forma di matita), eliminare i profili indesiderati (tramite il pulsante a forma di cestino) o aggiungere ulteriori profili tramite il tasto in alto a destra della schermata. L'unica limitazione, gestita autonomamente dal sistema, è quella di mantenerne almeno un profilo attivo per evitare problematiche future. Nella \textit{\textbf{profile screen}} si potranno osservare tutte le informazioni relative ai profili (nome, icona, età, peso e genere) e, cliccando sopra uno di essi lo si potrà impostare come profilo attivo, con il quale verranno registrate tutte le attività che verranno svolte. Questa schermata viene trattata come uno StatelessWidget essendo che non dovrà mantenere mutabilità, basandosi interamente sul \textit{ProfileProvider}. In questo modo ogni volta che si modificherà, aggiungerà o eliminerà un profilo la schermata si ricostruirà automaticamente. 
+L'ultima schermata dell'applicazione accessibile prima di effettuare il tracciamento sarà quella dedicata ai profili, precedentemente utilizzata al primo avvio dell'applicazione. Tramite i pulsanti dedicati in essa si potranno modificare i profili esistenti (cliccando sul tasto a forma di matita), eliminare i profili indesiderati (tramite il pulsante a forma di cestino) o aggiungere ulteriori profili tramite il tasto in alto a destra della schermata. L'unica limitazione, gestita autonomamente dal sistema, è quella di mantenerne almeno un profilo attivo per evitare problematiche future. Nella \textit{\textbf{profile screen}} si potranno osservare tutte le informazioni relative ai profili (nome, icona, età, peso e genere) e, cliccando sopra uno di essi, lo si potrà impostare come profilo attivo, con il quale verranno registrate tutte le attività che verranno svolte. Questa schermata viene trattata come uno StatelessWidget essendo che non dovrà mantenere mutabilità, basandosi interamente sul \textit{ProfileProvider}. In questo modo ogni volta che si modificherà, aggiungerà o eliminerà un profilo, la schermata si ricostruirà automaticamente. 
 Per renderizzare l'elenco dei profili si utilizzerà un costrutto ottimizzato di Flutter che creerà i widget solo quando staranno per essere visualizzati a schermo (attuando dunque una procedura di lazy loading). Questo costrutto prende il nome di \textit{ListView.builder} (\ref{profiles_list}) e verificherà inoltre se il profilo interessato sarà attivo o meno, modificando in caso il suo stile, come si può vedere a sinistra della figura \ref{profilescreens}.
 
 \begin{figure}[htbp]
@@ -901,7 +901,7 @@ final smoothedPosition = Position(
 \end{lstlisting}
 A seconda del modello del sensore, i dati ricevuti sono composti da pacchetti binari di diversa struttura. Il sistema implementa quindi un auto-rilevamento incrociando il nome BLE e la lunghezza in byte del pacchetto ricevuto. Nel caso dei dispositivi Sensoria i protocolli utilizzati comprendono:
 \begin{itemize}
-  \item F20: associato ai sensori Core montati sul ginocchio (20 byte con 9 gradi di libertà senza sensori di pressione).
+  \item F20: associato ai sensori Core montati sul ginocchio (20 byte con 9 gradi di libertà senza rilevatori di pressione).
   \item H20: associato ai calzini smart (uguali ai sensori core in aggiunta a 3 rilevatori di pressione).
 \end{itemize}
 In base al protocollo che verrà selezionato, il sistema applicherà una determinata funzione di parsing\footnote{Con il termine parsing si indica un processo di scomposizione e analisi dati in ambito informatico.}. Per ottenere le informazioni presenti all'interno dei byte, verrà sfruttata la funzione \textit{b(i)} che estrarrà il byte in i-esima posizione affinchè venga interpretato come valore senza segno. A seguire, la funzione \textit{s10} convertirà il valore binario in un un intero con segno compreso tra -512 e 512, tramite la sottrazione di 1024 a tutti i valori superiori a 511. In questo modo l'intervallo ottenuto corrisponderà a quello dei sensori, permettendo delle misurazioni accurate e in scala.
