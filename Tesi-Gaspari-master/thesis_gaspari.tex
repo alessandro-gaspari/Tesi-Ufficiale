@@ -1058,6 +1058,36 @@ Per evitare infine che i layout entrino in collisione tra loro durante le fasi d
     </div>
 </section>
 \end{lstlisting}
+A supporto del file HTML, è stato creato un file CSS per la corretta visualizzazione di tutte le componenti. Come nell'interfaccia relativa all'applicazione, anche la dashboard web mantiene un colore di sfondo scuro, per assicurare così la visibilità in qualsiasi condizione, riducendo inoltre l'eventuale affaticamento visivo. Gli altri colori utilizzati hanno uno scopo semantico ed informativo, oltre che decorativo, poiché:
+
+\begin{itemize}
+  \item Il colore verde indica stati di attività dei sensori e e delle connessioni.
+  \item I gradienti dal verde al rosso nella mappa indicano le diverse zone relative ai battiti.
+  \item I tre colori diversi delle pressioni plantari servono a distinguerle meglio sul grafico e nei dati RAW. 
+\end{itemize}
+In questa maniera l'utente che si dovrà occupare dell'analisi dei dati, non necessiterà obbligatoriamente di osservare i dati RAW per trarre delle conclusioni. Ulteriori modifiche rese possibili dal file CSS riguardano i grafici delle pressioni e la mappa interattiva. Nativamente queste componenti non nascono con un tema scuro e minimale, implementando funzionalità aggiuntive spesso non utili. Il CSS si occupa dunque di far adottare sia alla mappa che ai grafici uno stile in linea con quello generale della dashboard, rimuovendo elementi superflui e creando animazioni per offrire un senso di dinamicità più elevata. Come citato in precedenza, i dati relativi all'arto sinistro saranno posti in una colonna a sinistra, mentre quelli relativi all'arto destro saranno posti in una colonna a destra, semplificando così il più possibile la compresione e rendendo intuitiva la visualizzazione dei dati da parte dell'utente analista.
+
+L'ultimo file che compone il frontend del sistema è scritto in JavaScript e ricoprirà un ruolo fondamentale per la visualizzazione dei dati sulla dashboard. Per prima cosa verrà effettuata la connessione al server utilizzando WebSocket, che supporterà la riconnesione automatica in caso di errori, assicurando inoltre una connessione persistente adatta allo streaming continuo di dati. In cima al file JavaScript verranno impostate alcune variabili importanti che serviranno a memorizzare:
+\begin{itemize}
+  \item Inizio e fine attività (molto utile a tutte le future funzioni per comprendere lo stato del sistema).
+  \item Flag per il live o il replay.
+  \item Array di vari dati. 
+\end{itemize}
+
+\begin{lstlisting}[language=Java, caption={Inizializzazione del WebSocket e impostazione delle variabili.}, label={socket_variabili}]
+var socket = io({
+  transports: ["websocket"],
+  reconnection: true,
+  reconnectionDelay: 500
+});
+
+var sessionStartTimeMs = null;
+var isReplayMode = false;
+var gpsSamples = [];
+var bpmSamples = [];
+\end{lstlisting}
+Uno dei compiti più importanti delegati al file JavaScript è la trasformazione dei valori dei sensori in angoli per le tibie e per il ginocchio. Il calcolo più semplice dei due è quello relativo alle tibie, calcolato tramite il singolo sensore posto sull'esterno della caviglia. Una volta che i dati giungeranno alla dashboard, per evitare sovraccarichi inutili a livello dell'applcazione mobile, verrà applicata la funzione arcotangente alle componenti $y$ e $z$ dell'accelerometro.
+
 
 \section{Esempi d'uso}
 
