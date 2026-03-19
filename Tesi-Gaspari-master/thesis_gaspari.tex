@@ -1086,8 +1086,18 @@ var isReplayMode = false;
 var gpsSamples = [];
 var bpmSamples = [];
 \end{lstlisting}
-Uno dei compiti più importanti delegati al file JavaScript è la trasformazione dei valori dei sensori in angoli per le tibie e per il ginocchio. Il calcolo più semplice dei due è quello relativo alle tibie, calcolato tramite il singolo sensore posto sull'esterno della caviglia. Una volta che i dati giungeranno alla dashboard, per evitare sovraccarichi inutili a livello dell'applcazione mobile, verrà applicata la funzione arcotangente alle componenti $y$ e $z$ dell'accelerometro.
-
+Uno dei compiti più importanti delegati al file JavaScript è la trasformazione dei valori dei sensori in angoli per le tibie e per il ginocchio. Il calcolo più semplice dei due è quello relativo alle tibie, calcolato tramite il singolo sensore posto sull'esterno della caviglia. Una volta che i dati giungeranno alla dashboard, per evitare sovraccarichi inutili a livello dell'applcazione mobile, verrà applicata la funzione arcotangente alle componenti $y$ e $z$ dell'accelerometro per poter così trovare gli angoli delle tibie.
+\begin{lstlisting}[language=Java, caption={Estrazione dell'angolo della tibia.}, label={js_tibia}]
+function tibiaLateralRawDeg(p) {
+  const ay = Number(p.accely);
+  const az = Number(p.accelz);
+  if (!Number.isFinite(ay) || !Number.isFinite(az)) return null;
+  
+  //Calcolo dell'arcotangente
+  return Math.atan2(az, ay) * 180 / Math.PI;
+}
+\end{lstlisting}
+L'utilizzo delle componenti accelerometriche per il calcolo dell'angolo risulta ottimale nel caso di inclinazioni laterali (come nel pattinaggio su pista) poiché si noterà una variazione nella distribuzione della gravità specialmente sugli assi $y$ e $z$. La funzione \textit{Math.atan} lavora sul rapporto di questi ultimi due assi perpendicolari tra loro, prendendone singolarmente i valori e guardandone il loro segno, permettendo così di ricostruire interamente l'angolo restituendo un valore tra -180° e +180°.
 
 \section{Esempi d'uso}
 
