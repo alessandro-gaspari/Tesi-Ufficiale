@@ -1099,6 +1099,36 @@ function tibiaLateralRawDeg(p) {
 \end{lstlisting}
 L'utilizzo delle componenti accelerometriche per il calcolo dell'angolo risulta ottimale nel caso di inclinazioni laterali (come nel pattinaggio su pista) poiché si noterà una variazione nella distribuzione della gravità specialmente sugli assi $y$ e $z$. La funzione \textit{Math.atan} lavora sul rapporto di questi ultimi due assi perpendicolari tra loro, prendendone singolarmente i valori e guardandone il loro segno, permettendo così di ricostruire interamente l'angolo restituendo un valore tra -180° e +180°.
 
+Per quanto riguarda il calcolo dell'angolo relativo al ginocchio, esso prevede un'elaborazione più complessa caratterizzata da una Sensor Fusion, ossia una fusione di dati fra più sensori (in questo caso i due dispositivi posti rispettivamente sopra e sotto il ginocchio). Per non occupare troppa banda Bluetooth i dati relativi alle flessioni del ginocchio verranno trasmessi compressi a 10 bit senza segno, garantendo così un'elevata reattività. Affinché i dati RAW superiori a 512 non restituiscano angoli totalmente fuori range, a seguito di numerosi test, essi sono stati mappati come valori negativi, permettendo così di ripristinare il loro segno originale. Dopo che tutti i pacchetti verranno ripuliti, il sistema calcolerà l'angolo di inclinazione frontale rispetto alla gravità terrestre. Questa operazione viene compiuta grazie alla funzione \textit{Math.atan2} applicata all'asse $y$ (parallelo all'osso) e $z$ (perpendicolare frontalmente all'osso), come si può osservare nel listato \ref{knee_frontale}.
+
+\begin{lstlisting}[language=Java, caption={Estrazione dell'angolo frontale sul piano Y Z.}, label={knee_frontale}]
+function tiltDegFromAccel_YZ(p) {
+  const ay = Number(p.accely);
+  const az = Number(p.accelz);
+  
+  if (!Number.isFinite(ay) || !Number.isFinite(az)) return null;
+  
+  // Calcolo goniometrico dell'inclinazione tramite arcotangente
+  return Math.atan2(az, ay) * 180 / Math.PI;
+}
+\end{lstlisting}
+
+Successivamente, per l'impostazione dell'angolo "zero", verrà utilizzata la funzione mediana applicata ai dati raccolti durante i primi cinque secondi dell'attività, durante i quali l'atleta dovrà mantenere la gamba il più distesa possibile stando in piedi. Questo permetterà uno scarto di circa il 100\% tutti gli outliers, assicurando così in futuro una misurazione degli angoli molto più precisa.
+\begin{lstlisting}[language=Java, caption={Calibrazione dell'angolo relativo al ginocchio tramite mediana.}, label={knee_median}]
+function medianDeg(vals) {
+  //Ordinamento crescente degli angoli
+  const a = (vals || []).filter(Number.isFinite).slice().sort((x, y) => x - y);
+  if (!a.length) return null;
+  
+  const m = Math.floor(a.length / 2);
+  //Elemento centrale o media dei due elementi centrali
+  return (a.length % 2) ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+\end{lstlisting}
+Per ottenere quindi l'inclinazione effettiva del ginocchio il file JavaScript calcolerà istantaneamente la differenza fra l'inclinazione dei due sensori, a cui poi sottrarrà il valore mediano ottenuto nei primi cinque secondi di calibrazione. In questo modo, dopo aver ulteriormente pulito ed arrotondato i dati tramite una media mobile per non creare valori troppo discostanti tra loro, l'analisi dell'angolo di inclinazione risulterà fluida reattiva e veritiera, assicurando all'utente analizzante di svolgere il suo lavoro in modo efficiente.
+
+
+
 \section{Esempi d'uso}
 
 
