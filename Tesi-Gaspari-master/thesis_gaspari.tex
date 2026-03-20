@@ -976,6 +976,12 @@ Widget build(BuildContext context) {
 
 \section{Sviluppo della dashboard web}
 La dashboard web è composta da un backend implementato in Python nel file \textit{app.py} e da un frontend che racchiude un file CSS, un file HTML e un file JavaScript. Il backend avrà il compito di ricevere ed organizzare tutti i dati provenienti dall'applicazione, mentre il frontend si occuperà della visualizzazione interattiva in tempo reale e di tutte le funzionalità avanzate presenti sul sito, come replay, card animate, mappa interattiva...
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{assets/vuota.png}
+  \caption{Dashboard web finale senza dati.}
+  \label{dashboard_vuota}
+\end{figure}
 
 \subsection{Backend}
 Il file responsabile dell'intero backend è \textit{app.py} che aprirà Flask in combinazione a Socket.IO, collegandosi via SSH\footnote{Secure Shell (SSH) è un protocollo di rete che permette ad un utente di controllare un server remoto in maniera sicura.} al server remoto per leggere in tempo reale i file di log generati e trasformandoli in eventi per il browser. Per accedere al server su cui sono memorizzati i log (\textit{lambda-iot.uniud.it}) il backend crea un tunnel SSH (come si osserva nell'estratto di codice \ref{ssh_setup}) tramite la libreria \textit{paramiko} che permette di stabilire connessioni sicure verso host remoti. Per garantire una maggior sicurezza la variabile SSH\_PASSWORD, credenziale indispensabile per accedere al server su cui sono registrati i log, viene direttamente impostata su Render, prevenendo così che essa possa essere divulgata. 
@@ -1098,6 +1104,12 @@ function tibiaLateralRawDeg(p) {
 }
 \end{lstlisting}
 L'utilizzo delle componenti accelerometriche per il calcolo dell'angolo risulta ottimale nel caso di inclinazioni laterali (come nel pattinaggio su pista) poiché si noterà una variazione nella distribuzione della gravità specialmente sugli assi $y$ e $z$. La funzione \textit{Math.atan} lavora sul rapporto di questi ultimi due assi perpendicolari tra loro, prendendone singolarmente i valori e guardandone il loro segno, permettendo così di ricostruire interamente l'angolo restituendo un valore tra -180° e +180°.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.60\textwidth]{assets/gradi.png}
+  \caption{Sezione della dashboard riservata ai gradi di flessione e ai Bongiorno Index.}
+  \label{gradi}
+\end{figure}
 
 Per quanto riguarda il calcolo dell'angolo relativo al ginocchio, esso prevede un'elaborazione più complessa caratterizzata da una Sensor Fusion, ossia una fusione di dati fra più sensori (in questo caso i due dispositivi posti rispettivamente sopra e sotto il ginocchio). Per non occupare troppa banda Bluetooth i dati relativi alle flessioni del ginocchio verranno trasmessi compressi a 10 bit senza segno, garantendo così un'elevata reattività. Affinché i dati RAW superiori a 512 non restituiscano angoli totalmente fuori range, a seguito di numerosi test, essi sono stati mappati come valori negativi, permettendo così di ripristinare il loro segno originale. Dopo che tutti i pacchetti verranno ripuliti, il sistema calcolerà l'angolo di inclinazione frontale rispetto alla gravità terrestre. Questa operazione viene compiuta grazie alla funzione \textit{Math.atan2} applicata all'asse $y$ (parallelo all'osso) e $z$ (perpendicolare frontalmente all'osso), come si può osservare nel listato \ref{knee_frontale}.
 
@@ -1112,7 +1124,6 @@ function tiltDegFromAccel_YZ(p) {
   return Math.atan2(az, ay) * 180 / Math.PI;
 }
 \end{lstlisting}
-
 Successivamente, per l'impostazione dell'angolo "zero", verrà utilizzata la funzione mediana applicata ai dati raccolti durante i primi cinque secondi dell'attività, durante i quali l'atleta dovrà mantenere la gamba il più distesa possibile stando in piedi. Questo permetterà uno scarto di circa il 100\% tutti gli outliers, assicurando così in futuro una misurazione degli angoli molto più precisa.
 \begin{lstlisting}[language=Java, caption={Calibrazione dell'angolo relativo al ginocchio tramite mediana.}, label={knee_median}]
 function medianDeg(vals) {
@@ -1126,6 +1137,62 @@ function medianDeg(vals) {
 }
 \end{lstlisting}
 Per ottenere quindi l'inclinazione effettiva del ginocchio il file JavaScript calcolerà istantaneamente la differenza fra l'inclinazione dei due sensori, a cui poi sottrarrà il valore mediano ottenuto nei primi cinque secondi di calibrazione. In questo modo, dopo aver ulteriormente pulito ed arrotondato i dati tramite una media mobile per non creare valori troppo discostanti tra loro, l'analisi dell'angolo di inclinazione risulterà fluida reattiva e veritiera, assicurando all'utente analizzante di svolgere il suo lavoro in modo efficiente.
+
+Se durante l'attività verranno utilizzati i \textit{Sensoria Socks}, la dashboard, oltre a generare gli angoli di flessione delle tibie, disegnerà negli appositi grafici tre linee per ciascun calzino, indicanti pressioni laterali e posteriori o anteriori, in aggiunta ai due Bongiorno Index, uno per ogni dispositivo. Il file JavaScript, per evitare di sovraccaricare eccessivamente il motore di rendering del browser, incapsulerà il comando per disegnare le tre righe delle pressioni all'interno di \textit{requestAnimationFrame}. In questo modo la frequenza di arrivo dei pacchetti relativi alle pressioni (100 Hertz) verrà scissa da quella relativa al refresh dei grafici (come si vede nello snippet \ref{pressioni}), limitandone l'aggiornamento a 60 Hertz facendo sì di mantenere comunque una fluidità elevata. È importante ricordare che al fine di ottenere una reattiva e fluida visualizzazione dei dati, essi non verranno mostrati valore per valore, ma verranno arrotondati tramite medie calcolate su brevi periodi nell'ordine di centesimi di secondo. 
+
+\begin{lstlisting}[language=Java, caption={Ottimizzazione del disegno dei grafici relativi alle pressioni.}, label={pressioni}]
+function scheduleSockRender(side) {
+  //...
+  requestAnimationFrame(() => {
+    sockRenderScheduled[side] = false;
+    const chart = sockCharts[side];
+    chart.setData(sockChartData[side]);
+    
+    // Aggiornamento scala asse X (finestra di 3 secondi)
+    const xMax = sockChartData[side][0][sockChartData[side][0].length - 1];
+    chart.setScale("x", { min: Math.max(0, xMax - 3), max: xMax + 0.1 });
+  });
+}
+\end{lstlisting}
+Essendo le pressioni plantari dei dati RAW non filtrati e non mappati, è stata scelta per l'appunta una presentazione tramite grafici, rendendo così la comprensione dei valori immediata e permettendo all'utente analizzante di realizzare istantaneamente quali pressioni risultano più o meno elevate di altre. Per facilitare ancor più la lettura dei grafici, è stato inserito un segmento tratteggiato, sia nei replay che nei live, indicante la lettura attuale delle pressioni.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.70\textwidth]{assets/pressioni.png}
+  \caption{Sezione della dashboard riservata ai grafici relativi alle pressioni plantari.}
+  \label{pressioni}
+\end{figure}
+
+La dashboard web, come citato in precedenza, è utilizzabile in due modalità: live oppure replay. Nella modalità live tutti i dati verranno filtrati, puliti ed elaborati per poi apparire in tempo reale nelle apposite sezioni dedicate. Se però tutti i dati ricevuti venissero mantenuti in RAM, si assisterebbe a grandi perdite di memoria e conseguenti rallentamenti del browser. Per ovviare ciò, gli array dei grafici e di tutti gli indicatori lavorano come dei buffer circolari, troncando gli elementi meno recenti. Nella funzione replay invece, il sistema opererà sull'intero storico di dati recuperati tramite il caricamento via log (\ref{logs}) dell'attività scelta. Come prima cosa verrà effettuato un reset e un adattamento della barra di scorrimento lungo tutta la durata dell'attività, in modo che esso sia perfettamente in linea con l'inizio e la fine di essa. Successivamente appariranno nella dashboard tutti i dati con il timestamp pari a quello impostato nello slider, simulando un singolo dato live messo in pausa.
+
+\begin{lstlisting}[language=Java, caption={Ricostruzione del log per la vista replay.}, label={replay}]
+function updateSockChartReplay(side, currentSec) {
+  //Ricostruzione temporale dall'inizio
+  for (const s of samples) {
+    const sec = (s.t - sessionStartTimeMs) / 1000;
+    xData.push(sec);
+    p0Data.push(s.p0 || 0);
+    p1Data.push(s.p1 || 0);
+    p2Data.push(s.p2 || 0);
+    //...
+  }
+
+  //Espansione all'intera durata dell'attivita'
+  sockChartData[side] = [xData, p0Data, p1Data, p2Data];
+  sockCharts[side].setData(sockChartData[side]);
+  sockCharts[side].setScale('x', { min: 0, max: getDurationSec() });
+}
+\end{lstlisting}
+
+Una delle sezioni fondamentali della dashboard risulta essere quella dedicata alla mappa interattiva e ai parametri visibili su di essa. 
+
+
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.50\textwidth]{assets/logs.png}
+  \caption{Lista dei log scaricabili relativi alle attività registrate sul server.}
+  \label{logs}
+\end{figure}
 
 
 
