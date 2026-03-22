@@ -394,7 +394,7 @@ Una volta verificata l'assenza di profili dunque, apparirà la schermata per la 
 
 \begin{lstlisting}[language=dart, caption={Validazione dei campi di input del form.}, label={formvalidation}]
 if (_formKey.currentState!.validate()) {
-  // salvataggio dati
+  //Salvataggio dati
 }
 \end{lstlisting}
 Al di sotto di essi si troveranno due card colorate dedicate alla scelta del genere, e una lista di avatar tra cui poter scegliere la preferita, assicurando così un'esperienza di personalizzazione minimale ma completa all'utente. A concludere la pagina è presente il pulsante di salvataggio, il quale consente la memorizzazione dei dati inseriti all’interno di una struttura gestita dal provider. La schermata di creazione e modifica del profilo è stata progettata come componente riutilizzabile, permettendo di distinguere automaticamente tra inserimento di un nuovo profilo e aggiornamento di uno esistente, riducendo la duplicazione del codice e migliorando la gestione dell’applicazione.
@@ -598,11 +598,11 @@ Tramite il codice di \textit{initState} (presente nel listato \ref{form_init}) v
 \begin{lstlisting}[language=dart, caption={Pre-compilazione dei campi di testo in caso di modifica.}, label={form_init}]
 void initState() {
   super.initState();
-  _nameCtrl = //validazione nome
-  _ageCtrl = //validazione eta'
-  _weightCtrl = //validazione peso
+  _nameCtrl = //Validazione nome
+  _ageCtrl = //Validazione eta'
+  _weightCtrl = //Validazione peso
   
-  if (widget.profileToEdit != null) { //set valori default
+  if (widget.profileToEdit != null) { //Set valori default
     _gender = widget.profileToEdit!.gender;
     _selectedAvatar = widget.profileToEdit!.avatar;
   }
@@ -671,7 +671,7 @@ La visualizzazione riguardante la lista dei sensori connessi è gestita da una m
 
 \begin{lstlisting}[language=dart, caption={Generazione delle card relative ai dispositivi BLE connessi.}, label={tracking_sensors}]
 ...devicesProvider.connectedDevices.entries.map((entry) {
-  return _buildDeviceCard( //creazione della card sensore
+  return _buildDeviceCard( //Creazione della card sensore
     devicesProvider.deviceNames[entry.key] ?? "Sensoria Device", 
     entry.key, 
     streamingManager.allSensorData[entry.key] != null, 
@@ -712,7 +712,7 @@ Quando verrà avviata la richiesta di connessione verso un nuovo dispositivo har
 \begin{lstlisting}[language=dart, caption={Connessione al sensore BLE e registrazione del listener.}, label={provider_connect}]
 Future<void> connectDevice(BluetoothDevice device) async {
   if (!canConnectMore) {
-    //messaggio errore
+    //Messaggio di errore
   }
 
   final deviceId = device.remoteId.toString();
@@ -734,7 +734,7 @@ Per quanto riguarda la vera e propria memorizzazione, che permette all'utente ut
 
 \begin{lstlisting}[language=dart, caption={Procedura per la disconnessione di tutti i sensori.}, label={provider_disconnect_all}]
 Future<void> disconnectAll() async {
-  for (//ogni device connesso) {
+  for (//Ogni device connesso) {
     final deviceId = device.remoteId.toString();
     _connectionSubscriptions[deviceId]?.cancel();
     await device.disconnect();
@@ -892,8 +892,8 @@ Una volta che verranno superati i tre filtri, la posizione viene smussata con un
 \begin{lstlisting}[language=dart, caption={Filtro complementare per levigare la traiettoria GPS.}, label={sm_gps_smooth}]
 final alpha = (position.accuracy / MIN_ACCURACY_THRESHOLD).clamp(0.5, 0.9);
 final smoothedPosition = Position(
-  latitude: //ultima latitudine smussata
-  longitude: //ultima longitudine smussata
+  latitude: //Ultima latitudine smussata
+  longitude: //Ultima longitudine smussata
   accuracy:  position.accuracy,
   speed: _estimatedSpeed, //Velocita' filtrata
   //...
@@ -943,7 +943,7 @@ theme: ThemeData(
   
   appBarTheme: const AppBarTheme(
     backgroundColor: Color(0xFF1A1A1A),
-    // ...
+    //...
   ),
   
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -1120,7 +1120,7 @@ function tiltDegFromAccel_YZ(p) {
   
   if (!Number.isFinite(ay) || !Number.isFinite(az)) return null;
   
-  // Calcolo goniometrico dell'inclinazione tramite arcotangente
+  //Calcolo goniometrico dell'inclinazione tramite arcotangente
   return Math.atan2(az, ay) * 180 / Math.PI;
 }
 \end{lstlisting}
@@ -1148,7 +1148,7 @@ function scheduleSockRender(side) {
     const chart = sockCharts[side];
     chart.setData(sockChartData[side]);
     
-    // Aggiornamento scala asse X (finestra di 3 secondi)
+    //Aggiornamento scala asse X (finestra di 3 secondi)
     const xMax = sockChartData[side][0][sockChartData[side][0].length - 1];
     chart.setScale("x", { min: Math.max(0, xMax - 3), max: xMax + 0.1 });
   });
@@ -1183,10 +1183,6 @@ function updateSockChartReplay(side, currentSec) {
 }
 \end{lstlisting}
 
-Una delle sezioni fondamentali della dashboard risulta essere quella dedicata alla mappa interattiva e ai parametri visibili su di essa. 
-
-
-
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.50\textwidth]{assets/logs.png}
@@ -1194,7 +1190,58 @@ Una delle sezioni fondamentali della dashboard risulta essere quella dedicata al
   \label{logs}
 \end{figure}
 
+Un'ulteriore sezione fondamentale della dashboard risulta essere quella dedicata alla mappa interattiva e ai parametri visibili su di essa. Per poter integrare una mappa realistica e in linea con il tema principale della dashboard, è stata adottata la libreria \textit{Leaflet}, che permetterà sia il tracciamento dell'utente quando riceverà le coordinate GPS, che il disegno del tracciato colorato in base ai BPM. In questa libreria saranno integrate internamente anche funzionalità per potersi spostare comodamente sulla mappa con mouse o trackpad, potendo così seguire a proprio piacimento gli spostamenti dell'atleta. È importante sottolineare che i dati GPS, giungendo al server con una frequenza molto bassa (un Hertz), causerebbero una visualizzazione del tracciato molto a scatti, peggiorando così la fluidità del sito. Per ovviare a ciò, il sistema calcola la traiettoria tramite interpolazione\footnote{L'interpolazione GPS è un processo matematico utile a stimare delle coordinate sconosciute sulla base di quelle conosciute.} rendendo così l'esperienza di analisi molto più piacevole, grazie anche anche all'animazione \textit{requestAnimationFrame} combinata ad un ammortizzamento applicato al movimento del marker GPS.
+\begin{lstlisting}[language=Java, caption={Interpolazione del segnale GPS.}, label={gps_interp}]
+function animateMapFollow(now) {
+  //Calcolo del tempo trascorso normalizzato tra 0 e 1
+  const t = Math.max(0, Math.min(1, (now - animationStartTime) / 700));
+  
+  //Applica curva per ammortizzare il movimento finale
+  const k = 1 - Math.pow(1 - t, 3);
 
+  //Sposta l'indicatore sulla coordinata interpolata
+  mapMarker.setLatLng({
+    lat: startMapPos.lat + (targetMapPos.lat - startMapPos.lat) * k,
+    lng: startMapPos.lng + (targetMapPos.lng - startMapPos.lng) * k
+  });
+
+  requestAnimationFrame(animateMapFollow); //Ricorsione
+}
+\end{lstlisting}
+Nel momento in cui si otterranno almeno due valori GPS validi, il sistema si occuperà di disegnare sulla mappa il tracciato congiungendo le coordinate. Per far questo, il percorso verrà frammentato in più parti vicine tra di loro chiamate \textit{polyline}. Ognuno di essi verrà colorato in base ai battiti registrati in quella determinata coordinata, essendo che la frequenza del cardio-frequenzimetro e del ricevitore GPS è la medesima. Come si può notare nella seconda parte del listato \ref{polyline}, se un segmento dovrà essere colorato diversamente dal precedente, verrà creata una nuova polyline, altrimenti verrà semplicemente estesa la previa.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.60\textwidth]{assets/mappa.png}
+  \caption{Visualizzazione della mappa con tracciato colorato e parametri.}
+  \label{mappa}
+\end{figure}
+
+\begin{lstlisting}[language=Java, caption={Generazione dei segmenti colorati nel tracciato.}, label={polyline}]
+function appendColoredSegment(...) {
+  //Calcolo del BPM al punto del segmento
+  const midT = (a.t + b.t) / 2;
+  const bpm = getBpmAtTime(midT);           
+  const color = //Colore in base al BPM
+
+  if (!state.activeSeg || state.activeColor !== color) {
+    //Creazione di una nuova polyline
+  } else {
+    //Estensione della polyline attiva
+  }
+}
+\end{lstlisting}
+Per calcolare i parametri presenti in alto a destra nella mappa (come si vede in figura \ref{mappa}) il sistema effettuerà dei calcoli elaborati con i dati ricevuti dai log. Il primo dato visibile dall'alto, ossia il battito cardiaco, verrà semplicemente recuperato dal log ricercando i valori prodotti da sensori con nomenclature riconducibili a dei cardio-frequenzimetri. Per la distanza invece, verrà utilizzata la formula di Haversine, citata di seguito.
+\[
+d = 2r \arcsin \left( \sqrt{ \sin^2 \left( \frac{\phi_2 - \phi_1}{2} \right) + \cos(\phi_1)\cos(\phi_2)\sin^2 \left( \frac{\lambda_2 - \lambda_1}{2} \right) } \right)
+\]
+Al suo interno si troveranno i seguenti dati:ù
+\begin{itemize}
+  \item Il raggio della terra ($r$).
+  \item Le latitudini dei due punti ($\phi_1$ e $\phi_2$).
+  \item Le longitudini dei due punti ($\lambda_1$ e $\lambda_2$).
+\end{itemize}
+Questa equazione matematica viene utilizzata per calcolare la distanza minima tra due coordinate presenti sul globo, tenendo conto della curvatura terrestre e assicurando una percentuale di errore minore allo 0,1\% sulle lunghe distanze.
 
 \section{Esempi d'uso}
 
