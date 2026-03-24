@@ -644,7 +644,7 @@ void initState() {
   //Inizializzazione animazione cursore
 }
 \end{lstlisting}
-Affinché il tracciamento del cursore nella mappa in app (e sulla dashboard) sia fluido, il sistema crea un timer che interrogherà il GPS ogni secondo (come si vede nella prima riga dello snippet \ref{tracking_gps_polling}), utilizzando il parametro \textit{LocationAccuracy} impostato su \textit{.bestForNavigation}, il che forzerà iOS (o Android) a fornire il dato sulla posizione più recente e preciso possibile. Una volta che sarà stata ottenuta la coordinata, la mappa si sposterà su tale.
+Affinché il tracciamento del cursore nella mappa in app (e sulla dashboard) sia fluido, il sistema crea un timer che interrogherà il GPS ogni secondo (come si vede nella prima riga dello snippet \ref{tracking_gps_polling}), utilizzando il parametro \textit{LocationAccuracy} impostato su \textit{.bestForNavigation}, il che forzerà iOS (o Android) a fornire il dato sulla posizione più recente e preciso possibile. Una volta che sarà stata ottenuta la coordinata, la mappa si sposterà su di essa.
 
 \begin{lstlisting}[language=dart, caption={Richiesta ciclica della posizione GPS ad alta precisione.}, label={tracking_gps_polling}]
 Timer.periodic(const Duration(seconds: 1), (timer) async {
@@ -665,9 +665,9 @@ Timer.periodic(const Duration(seconds: 1), (timer) async {
   } catch (e) {//Gestione errore}
 });
 \end{lstlisting}
-Per la gestione del cronometro relativo alla durata dell'attività, al posto di aggiornare il suo valore ogni secondo con una chiamata a \textit{setState} che implicherebbe ri-renderizzare ogni secondo tutte le componenti presenti nella schermata (facendo crollare le prestazioni), il sistema isola questa feature in uno StatelessWidget di piccole dimensioni, ovviando il problema e preservando la fluidità. Quanto l'indicatore in alto a destra della schermata, indicante il possibile raggiungimento o meno del server, esso leggerà il valore \textit{isServerReachable} che eseguirà dei ping continui per poi colorare l'indicatore in base all'esito.
+Per la gestione del cronometro relativo alla durata dell'attività, al posto di aggiornare il suo valore ogni secondo con una chiamata a \textit{setState}, che implicherebbe ri-renderizzare ogni secondo tutte le componenti presenti nella schermata (facendo crollare le prestazioni), il sistema isola questa feature in uno StatelessWidget di piccole dimensioni, ovviando il problema e preservando la fluidità. L'indicatore in alto a destra della schermata, indicante il possibile raggiungimento o meno del server, leggerà il valore \textit{isServerReachable} che eseguirà dei ping continui per poi colorare l'indicatore in base all'esito.
 
-La visualizzazione riguardante la lista dei sensori connessi è gestita da una mappatura dei dispositivi del provider. In questo modo l'app genererà tante card quante saranno i sensori connessi all'avvio dell'attività, e controllerà se il buffer locale in cui verranno immagazzinati i dati starà effettivamente ricevendo dati da quel dispositivo Bluetooth (riconosciuto dal suo ID unico). In caso affermativo mostrerà un led verde lampeggiante, altrimenti rosso. Anche il cardio-frequenzimetro verrà accodato alla lista dei sensori se disponibile, assegnandoli un'icona personalizzata per distinguerlo dagli altri. Nel caso in cui un determinato sensore non abbia un nome personalizzato o un'icona personalizzata gliene verranno assegnate di default. 
+La visualizzazione riguardante la lista dei sensori connessi è gestita da una mappatura dei dispositivi del provider. In questo modo l'app genererà tante card quante saranno i sensori connessi all'avvio dell'attività e controllerà se il buffer locale in cui verranno immagazzinati i dati starà effettivamente ricevendo dati da quel dispositivo Bluetooth (riconosciuto dal suo ID unico). In caso affermativo mostrerà un led verde lampeggiante, altrimenti rosso. Anche il cardio-frequenzimetro verrà accodato alla lista dei sensori, se disponibile, assegnandoli un'icona personalizzata per distinguerlo dagli altri. Nel caso in cui un determinato sensore non abbia un nome personalizzato o un'icona personalizzata gliene verranno assegnate di default. 
 
 \begin{lstlisting}[language=dart, caption={Generazione delle card relative ai dispositivi BLE connessi.}, label={tracking_sensors}]
 ...devicesProvider.connectedDevices.entries.map((entry) {
@@ -681,7 +681,7 @@ La visualizzazione riguardante la lista dei sensori connessi è gestita da una m
 if (streamingManager.hrmDeviceName != null)
   _buildDeviceCard(hrmName, "HRM-SENSOR", true, "\\icona cuore"),
 \end{lstlisting}
-Terminata la sessione, l'utente premerà il pulsante rosso "stop tracking" posto in fondo alla schermata. Questo evento invocherà \textit{StreamingManager} per fermare la registrazione in primis della sessione (con la funzione \textit{stopTracking}) e successivamente dell'invio dati verso il socket (tramite \textit{stopAll}). Per finire l'applicazione ritornerà sulla schermata iniziale rilasciando tutte le risorse precedentemente in uso dalla \textit{tracking screen}.
+Terminata la sessione, l'utente premerà il pulsante rosso "stop tracking" posto in fondo alla schermata. Questo evento invocherà \textit{StreamingManager} per fermare la registrazione in primis della sessione (con la funzione \textit{stopTracking}) e successivamente dell'invio dati verso il socket (tramite \textit{stopAll}). Alla fine l'applicazione ritornerà sulla schermata iniziale rilasciando tutte le risorse precedentemente in uso dalla \textit{tracking screen}.
 
 \begin{lstlisting}[language=dart, caption={Procedura di arresto degli stream dati e chiusura della sessione.}, label={tracking_stop}]
 Future<void> _handleStopTracking() async {
@@ -693,7 +693,7 @@ Future<void> _handleStopTracking() async {
 \end{lstlisting}
 
 \subsection{Providers}
-Per evitare il passaggio di numerose quantità di parametri nel codice, in Flutter si utilizzano i provider. Essi agiscono come dei contenitori di dati, che alla variazione di essi, invocheranno il metodo \textit{NotifyListeners} avvisando autonomamente tutti i widget che si sono sottoscritti ad una specifica classe. In tal modo si ricostruiranno solo le porzioni di schermo interessate al cambiamento, mantenendo così fluidità e prestazioni elevate.
+In Flutter si utilizzano i provider per evitare il passaggio di numerose quantità di parametri nel codice. Essi agiscono come dei contenitori di dati, che alla variazione di essi, invocheranno il metodo \textit{NotifyListeners} avvisando autonomamente tutti i widget che si sono sottoscritti ad una specifica classe. In tal modo si ricostruiranno solo le porzioni di schermo interessate al cambiamento, mantenendo così fluidità e prestazioni elevate.
 Uno dei due provider fondamentali per il funzionamento dell'hardware esterno all'applicazione è il \textit{Connected Devices Provider}. Esso mantiene nella memoria del dispositivo tutti i sensori precedentemente connessi con il loro nome e la loro icona personalizzata, per poter permettere in caso di future connessione una maggior facilità nel riconoscimento. In questo caso vengono utilizzate delle coppie chiave-valore in cui la chiave è rappresentata dall'indirizzo MAC\footnote{L'indirizzo MAC è un codice univoco di 12 cifre per contraddistinguere varie tipologie di dispositivi.} del dispositivo Bluetooth. In questa maniera la ricerca e l'aggiornamento avranno complessità molto basse, assicurando una reattività elevata. Nel listato \ref{provider_vars} si può anche notare come venga impostato un numero massimo di sei dispositivi collegabili, al fine di evitare instabilità nella comunicazione Bluetooth fra applicazione mobile e sensori. 
 
 \begin{lstlisting}[language=dart, caption={Strutture dati del Provider e limite massimo di connessioni.}, label={provider_vars}]
@@ -707,7 +707,7 @@ class ConnectedDevicesProvider extends ChangeNotifier {
   bool get canConnectMore => _connectedDevices.length < maxDevices;
 }
 \end{lstlisting}
-Quando verrà avviata la richiesta di connessione verso un nuovo dispositivo hardware, il provider si occuperà di creare un timer impostato a 15 secondi, per attuare un meccanismo di timeout. Se entro questa finestra temporale la connessione Bluetooth Low Energy andrà a buon fine, l'istanza del dispositivo verrà registrata all'interno delle strutture dati in memoria, autorizzando l'applicazione a interagire con esso. Insieme al salvataggio, verrà aperto un canale di ascolto in background. Questo listener avrà il compito cruciale di monitorare costantemente lo stato fisico del collegamento e, qualora il sensore dovesse spegnersi per esaurimento della batteria o uscire dal raggio di copertura utile della radio Bluetooth, il sistema rileverà automaticamente la caduta di connessione. In tal caso, l'applicazione provvederà a rimuovere immediatamente il dispositivo dalla lista dei sensori attivi e invalidando le sottoscrizione ad esso e richiamando infine il metodo \textit{notifyListeners} (come si osserva nello snippet \ref{provider_connect}).
+Quando verrà avviata la richiesta di connessione verso un nuovo dispositivo hardware, il provider si occuperà di creare un timer impostato a 15 secondi, per attuare un meccanismo di timeout. Se entro questa finestra temporale la connessione Bluetooth Low Energy andrà a buon fine, l'istanza del dispositivo verrà registrata all'interno delle strutture dati in memoria, autorizzando l'applicazione a interagire con esso. Insieme al salvataggio, verrà aperto un canale di ascolto in background. Questo listener avrà il compito cruciale di monitorare costantemente lo stato fisico del collegamento e, qualora il sensore dovesse spegnersi per esaurimento della batteria o uscire dal raggio di copertura utile della radio Bluetooth, il sistema rileverà automaticamente la caduta di connessione. In tal caso, l'applicazione provvederà a rimuovere immediatamente il dispositivo dalla lista dei sensori attivi, invalidando le sottoscrizione ad esso e richiamando infine il metodo \textit{notifyListeners} (come si osserva nello snippet \ref{provider_connect}).
 
 \begin{lstlisting}[language=dart, caption={Connessione al sensore BLE e registrazione del listener.}, label={provider_connect}]
 Future<void> connectDevice(BluetoothDevice device) async {
@@ -730,7 +730,7 @@ Future<void> connectDevice(BluetoothDevice device) async {
   notifyListeners();
 }
 \end{lstlisting}
-Per quanto riguarda la vera e propria memorizzazione, che permette all'utente utilizzatore di evitare l'assegnazione di nomi ed icone ad ogni apertura dell'app, essa viene gestita tramite dei file JSON. Ogni qualvolta che l'applicazione verrà aperta o chiusa, tutti i dati verranno convertiti in in formato JSON, salvati successivamente sulla memoria non volatile\footnote{Per memoria non volatile si intende un tipo di memoria capace di mantenere i dati anche in assenza di alimentazione continua (utile per archiviazione a lungo termine).} dello smartphone. Un'altra funzionalità fondamentale svolta da questo provider è quella di pulire tutte le connessioni e disconnettere i dispositivi Bluetooth. Infatti quando l'applicazione verrà chiusa o riavviata, il metodo \textit{disconnectAll} (\ref{provider_disconnect_all}) attuerà asincronamente su tutti i sensori connessi, una troncatura pulita del loro socket Bluetooth, cancellandoli momentaneamente dalla memoria. Tramite questa pulizia efficiente si preverranno le perdite di memoria evitando che la comunicazione Bluetooth non venga alterata da precedenti connessioni non chiuse. 
+Per quanto riguarda la vera e propria memorizzazione, che permette all'utente utilizzatore di evitare l'assegnazione di nomi ed icone ad ogni apertura dell'app, essa viene gestita tramite dei file JSON. Ogni qualvolta che l'applicazione verrà aperta o chiusa, tutti i dati verranno convertiti in formato JSON e salvati successivamente sulla memoria non volatile\footnote{Per memoria non volatile si intende un tipo di memoria capace di mantenere i dati anche in assenza di alimentazione continua (utile per archiviazione a lungo termine).} dello smartphone. Un'altra funzionalità fondamentale svolta da questo provider è quella di pulire tutte le connessioni e disconnettere i dispositivi Bluetooth. Infatti quando l'applicazione verrà chiusa o riavviata, il metodo \textit{disconnectAll} (\ref{provider_disconnect_all}) attuerà asincronamente su tutti i sensori connessi, una troncatura pulita del loro socket Bluetooth, cancellandoli momentaneamente dalla memoria. Tramite questa pulizia efficiente si preverranno le perdite di memoria evitando che la comunicazione Bluetooth non venga alterata da precedenti connessioni non chiuse. 
 
 \begin{lstlisting}[language=dart, caption={Procedura per la disconnessione di tutti i sensori.}, label={provider_disconnect_all}]
 Future<void> disconnectAll() async {
@@ -744,7 +744,7 @@ Future<void> disconnectAll() async {
   notifyListeners();
 }
 \end{lstlisting}
-Il secondo provider presente all'interno del codice dedicato all'applicazione prende il nome di \textit{Profile Provider} che, come suggerisce il nome si occuperà di tutta la parte dedicata alla gestione profili, permettendo così la possibilità di scegliere un determinato utente per l'attività che si desidererà svolgere. All'interno di questo provider, si troverà la classe \textit{User Profile} (\ref{profile_model}) che fungerà da DTO\footnote{Un Data Trasnfer Object (DTO) rappresenta un modello di architettura software per trasferire dati tra livelli.}. In essa verranno raccolti tutti i dati dell'atleta che successivamente verranno trasmessi dentro il log dell'attività. Per garantire inoltre, il salvataggio in memoria locale di tutti i profili e la corretta trasmissione alla dashboard web, i profili verranno anch'essi convertiti in file JSON tramite il metodo \textit{toJson}.
+Il secondo provider presente all'interno del codice dedicato all'applicazione prende il nome di \textit{Profile Provider} che, come suggerisce il nome, si occuperà di tutta la parte dedicata alla gestione profili, permettendo così la possibilità di scegliere un determinato utente per l'attività che si desidererà svolgere. All'interno di questo provider, si troverà la classe \textit{User Profile} (\ref{profile_model}) che fungerà da DTO\footnote{Un Data Trasnfer Object (DTO) rappresenta un modello di architettura software per trasferire dati tra livelli.}. In essa verranno raccolti tutti i dati dell'atleta che successivamente verranno trasmessi dentro il log dell'attività. Per garantire inoltre, il salvataggio in memoria locale di tutti i profili e la corretta trasmissione alla dashboard web, i profili verranno anch'essi convertiti in file JSON tramite il metodo \textit{toJson}.
 
 \begin{lstlisting}[language=dart, caption={Definizione del modello dati UserProfile e serializzazione JSON.}, label={profile_model}]
 class UserProfile {
@@ -763,7 +763,7 @@ class UserProfile {
 Tramite il costruttore fromJson si eseguirà l'operazione inversa, ricostruendo un profilo con tutti i suoi dati dal file JSON presente in memoria. Nel caso in cui nella ricostruzione di un determinato profilo non si riesca a recuperare l'avatar, il sistema provvederà ad assegnarne uno di default. 
 
 Un importante pattern implementato all'interno del \textit{profile provider} è il \textit{ChangeNotifier} che permette di notificare tutti i widget in ascolto.
-Al suo interno, \textit{ActiveProfile} al posto di restituire una semplice variabile, eseguirà una ricerca all'interno della lista profili tramite un'ID univoco (\textit{activeProfileId}). Se ipoteticamente il profilo selezionato non esistesse più, questa eccezione verrà gestita da un blocco \textit{try-catch} che selezionerà il primo profilo disponibile, evitando così errori vari. Quando si genererà un nuovo profilo di conseguenza si necessiterà di creare anche un ID unico tramite lo standard UUID\footnote{L'Universally Unique Identifier (UUID) è un identificatore univoco universale composto da 128 bit, visualizzato solitamente come una stringa di 36 caratteri esadecimali.}. Se esso risulterà l'unico presente, verrà impostato come profilo attivo salvando lo stato del sistema e notificando la GUI\footnote{Con l'acronimo GUI si indica la Graphic User Interface, ossia l'interfaccia grafica del sistema.} tramite \textit{notifyListeners}.
+Al suo interno, \textit{ActiveProfile} al posto di restituire una semplice variabile, eseguirà una ricerca all'interno della lista profili tramite un'ID univoco (\textit{activeProfileId}). Se ipoteticamente il profilo selezionato non esistesse più, questa eccezione verrà gestita da un blocco \textit{try-catch} che selezionerà il primo profilo disponibile, evitando così errori vari. Quando si genererà un nuovo profilo di conseguenza si creerà anche un ID unico tramite lo standard UUID\footnote{L'Universally Unique Identifier (UUID) è un identificatore univoco universale composto da 128 bit, visualizzato solitamente come una stringa di 36 caratteri esadecimali.}. Se esso risulterà l'unico presente, verrà impostato come profilo attivo salvando lo stato del sistema e notificando la GUI\footnote{Con l'acronimo GUI si indica la Graphic User Interface, ossia l'interfaccia grafica del sistema.} tramite \textit{notifyListeners}.
 
 \begin{lstlisting}[language=dart, caption={Aggiunta di un nuovo utente e generazione dell'identificatore.}, label={profile_add}]
 Future<void> addProfile(//Dati del profilo) async {
@@ -785,7 +785,7 @@ Future<void> addProfile(//Dati del profilo) async {
 Nel caso in cui un determinato profilo utente debba essere cancellato, il sistema, per ovviare problemi di instabilità, effettua due controlli di sicurezza (\ref{profile_delete}): 
 \begin{enumerate}
   \item Il profilo da cancellare non deve essere l'unico presente in memoria, garantendo così di avere sempre almeno un utente attivo.
-  \item Il profilo da cancellare deve essere quello effettivamente selezionato, se sarà così allora verra selezionato come attivo il più vicino ad esso nella lista dei profili e poi il sistema procederà all'eliminazione del desiderato.
+  \item Il profilo da cancellare deve essere quello effettivamente selezionato, se sarà così allora verrà selezionato come attivo il più vicino ad esso nella lista dei profili e poi il sistema procederà all'eliminazione di quello desiderato.
 \end{enumerate}
 
 \begin{lstlisting}[language=dart, caption={Eliminazione con protezione dell'ultimo profilo rimanente.}, label={profile_delete}]
@@ -804,7 +804,7 @@ Future<void> deleteProfile(String id) async {
 \end{lstlisting}
 
 \subsection{Stream manager e file utili}
-Per poter correttamente inviare i dati provenienti dai sensori alla dashboard salvandoli su un server remoto, l'applicazione necessita di ulteriori file indispensabili. Uno di essi prende il nome di \textit{tcp client} e implementa per l'appunto, un canale TCP\footnote{Il Transimission Control Protocol (TCP) è un protocollo di rete che assicura scambi di dati affidabili, ordinati e integri tra dispositivi sulla rete.} persistente in grado di gestire grandi quantità di dati ad alte frequenze senza delay o overhead eccessivi. All'interno di essa si trova la classe \textit{TCPDataSender} che si occuperà di collegarsi al server remoto gestendo autonomamente disconessioni e riconessioni. Il primo metodo al suo interno si chiama \textit{connect} e prevede la connessione con il server remoto tramite handshake con timeout di tre secondi. Tramite dei controlli \textit{if} il sistema impedirà all'applicazione di creare più tentativi di connesioni in contemporanea, il che potrebbe causare perdite di memoria o altri errori. Una volta stabilita la connessione, per rilevare eventuali chiusure forzate o perdite di pacchetti, il sistema si iscriverà allo stream di eventi \textit{done} o \textit{catchError}.
+Per poter correttamente inviare i dati provenienti dai sensori alla dashboard salvandoli su un server remoto, l'applicazione necessita di ulteriori file indispensabili. Uno di essi prende il nome di \textit{tcp client} e implementa per l'appunto, un canale TCP\footnote{Il Transimission Control Protocol (TCP) è un protocollo di rete che assicura scambi di dati affidabili, ordinati e integri tra dispositivi sulla rete.} persistente in grado di gestire grandi quantità di dati ad alte frequenze senza delay o overhead eccessivi. All'interno di essa si trova la classe \textit{TCPDataSender} che si occuperà di collegarsi al server remoto gestendo autonomamente disconnessioni e riconnessioni. Il primo metodo al suo interno si chiama \textit{connect} e prevede la connessione con il server remoto tramite handshake con timeout di tre secondi. Tramite dei controlli \textit{if} il sistema impedirà all'applicazione di creare più tentativi di connessioni in contemporanea, il che potrebbe causare perdite di memoria o altri errori. Una volta stabilita la connessione, per rilevare eventuali chiusure forzate o perdite di pacchetti, il sistema si iscriverà allo stream di eventi \textit{done} o \textit{catchError}.
 
 \begin{lstlisting}[language=dart, caption={Apertura della connessione con timeout.}, label={tcp_connect}]
 Future<bool> connect() async {
@@ -848,7 +848,7 @@ Future<void> sendData(//Nome del sensore e dati) async {
 \end{lstlisting}
 Per la gestione della chiusura (imprevista o non) del canale il sistema sfrutterà il metodo \textit{handleDisconnection}. Al suo interno sarà presente una chiamata alla funzione \textit{destroy} che assicurerà la chiusura del socket, liberando memoria e impedendo all'utente di inviare dati ad uno stream chiuso.
 
-Procedendo con l'analisi dei file necessari alla trasmissione, lo \textit{streaming manager} ricopre un ruolo fondamentale. Con esso viene esteso \textit{ChangeNotifier}, coordinando tutte le diverse streaming di dati diversi (BLE, GPS, IMU). Tutte le schermate che necessiteranno di dati in tempo reale si iscriveranno allo \textit{streaming manager} ricevendo aggiornamenti sui dati alla fine di ogni ciclo. All'interno di questo file si trovano anche delle costanti rappresentanti i limiti delle capacità biomeccaniche degli atleti, come si può osservare in figura \ref{sm_vars}. Per la velocità massima è stata scelta una soglia di circa 58 km/h, permettendo così di filtrare eventuali rumori GPS che restituirebbero velocità anormali.
+Procedendo con l'analisi dei file necessari alla trasmissione, lo \textit{streaming manager} ricopre un ruolo fondamentale. Con esso viene esteso \textit{ChangeNotifier}, coordinando tutte le diverse streaming di dati diversi (BLE, GPS, IMU). Tutte le schermate che necessiteranno di dati in tempo reale si iscriveranno allo \textit{streaming manager} ricevendo aggiornamenti sui dati alla fine di ogni ciclo. All'interno di questo file si trovano anche delle costanti rappresentanti i limiti delle capacità biomeccaniche degli atleti, come si può osservare nella figura \ref{sm_vars}. Per la velocità massima è stata scelta una soglia di circa 58 km/h, permettendo così di filtrare eventuali rumori GPS che restituirebbero velocità anormali.
 
 \begin{lstlisting}[language=dart, caption={Costanti per il monitoraggio.}, label={sm_vars}]
 class StreamingManager extends ChangeNotifier {
@@ -859,8 +859,8 @@ class StreamingManager extends ChangeNotifier {
   ...
 }
 \end{lstlisting}
-Per evitare che il dispositivo su cui viene eseguita l'applicazione interrompa le streaming dati a schermo spento o dopo qualche minuto di inattività, all'interno dello \textit{streaming manager} viene implementato un meccanismo che impedisce al processore di entrare in modalità di risparmio energetico, nominato \textit{WakelockPlus}. Successivamente verrà anche connesso il \textit{TCPDataSender} per poter così aprire il canale verso il server e avviare gli streaming. 
-Per ovviare il problema della generazione frequente di errori da parte del GPS dello smartphone come accuratezza insufficiente, salti di posizione o dati duplicati, nel sistema è stato implementata una combinazione di filtri ispirata al filtro di Kalman\footnote{Il filtro di Kalman è un algoritmo matematico che stima degli stati reali, unendo previsioni teoriche con misure dei sensori, riducendo errori e rumori.}.
+Per evitare che il dispositivo su cui viene eseguita l'applicazione interrompa gli streaming dati a schermo spento o dopo qualche minuto di inattività, all'interno dello \textit{streaming manager} viene implementato un meccanismo che impedisce al processore di entrare in modalità di risparmio energetico, nominato \textit{WakelockPlus}. Successivamente verrà anche connesso il \textit{TCPDataSender} per poter così aprire il canale verso il server e avviare gli streaming. 
+Per ovviare il problema della generazione frequente di errori da parte del GPS dello smartphone come accuratezza insufficiente, salti di posizione o dati duplicati, nel sistema è stata implementata una combinazione di filtri ispirata al filtro di Kalman\footnote{Il filtro di Kalman è un algoritmo matematico che stima degli stati reali, unendo previsioni teoriche con misure dei sensori, riducendo errori e rumori.}.
 La combinazione adottata prevede: 
 \begin{itemize}
   \item Scarto di dati GPS con un'incertezza maggiore a 25 metri.
@@ -999,7 +999,7 @@ def create_ssh_client():
                    password=os.environ.get("SSH_PASSWORD"), timeout=10)
     return client
 \end{lstlisting}
-Per evitare crash del server dovuti ad eccezioni non gestite causate da latenze o corruzioni di dati nei log, in questo file viene implementato un parser\footnote{Con il termine parser si indica un algoritmo che analizza una sequenza di dati per verificare la loro correttezza, strutturandoli in formati più leggibili.} che cercherà autonomamente l'apertura e la chiusura delle strutture JSON all'interno delle righe. Essendo che la quantità di dati che giunge al server è elevata, il sistema di monitoraggio adotta una soluzione tramite la lettura incrementale, in maniera tale da non rileggere numerose righe a vuoto ma solamente di leggere quanti byte nuovi verranno scritti nell'ultimo secondo. Ad ogni ciclo, come si nota nell'algoritmo della soluzione proposta \ref{backend_live_tail}, confronterà la dimensione del file di log attuale con quella registrata nel ciclo precedente, estraendo solamente i nuovi byte aggiunti (\textit{new\_bytes}), evitando ridondanze e permettendo così la gestione di dati ad alta frequenza.
+Per evitare crash del server dovuti ad eccezioni non gestite causate da latenze o corruzioni di dati nei log, in questo file viene implementato un parser\footnote{Con il termine parser si indica un algoritmo che analizza una sequenza di dati per verificare la loro correttezza, strutturandoli in formati più leggibili.} che cercherà autonomamente l'apertura e la chiusura delle strutture JSON all'interno delle righe. Essendo che la quantità di dati che giunge al server è elevata, il sistema di monitoraggio adotta una soluzione tramite la lettura incrementale, in maniera tale da non rileggere numerose , ma solamente di leggere quanti byte nuovi verranno scritti nell'ultimo secondo. Ad ogni ciclo, come si nota nell'algoritmo della soluzione proposta \ref{backend_live_tail}, confronterà la dimensione del file di log attuale con quella registrata nel ciclo precedente, estraendo solamente i nuovi byte aggiunti (\textit{new\_bytes}), evitando ridondanze e permettendo così la gestione di dati ad alta frequenza.
 
 \begin{lstlisting}[language=Python, caption={Algoritmo di lettura incrementale.}, label={backend_live_tail}]
 if stat.st_size > last_file_size:
@@ -1043,7 +1043,7 @@ Come citato precedentemente, il frontend del sito è composto da tre file princi
     </div>
 </div>
 \end{lstlisting}
-Affinché sulla dashboard fosse subito chiaro quali fossero le componenti dei sensori montati sull'arto sinistro piuttosto che su quello destro, l'HTML è stato diviso in due colonne. In questo modo l'utente che dovrà analizzare i dati dell'atleta realizzerà istantaneamente quali dati corrisponderanno a quale arto, individuando più facilmente anche eventuali asimmetrie nei Bongiorno index o nelle pressioni plantari. \\
+Affinché sulla dashboard fosse subito evidente quali fossero le componenti dei sensori montati sull'arto sinistro piuttosto che su quello destro, l'HTML è stato diviso in due colonne. In questo modo l'utente che dovrà analizzare i dati dell'atleta realizzerà istantaneamente quali dati corrisponderanno a quale arto, individuando più facilmente anche eventuali asimmetrie nei Bongiorno index o nelle pressioni plantari. \\
 
 \begin{lstlisting}[language=HTML, caption={Struttura di una colonna (destra) in HTML.}, label={html_biomechanics}]
 <div class="right-col">
@@ -1235,7 +1235,7 @@ Per calcolare i parametri presenti in alto a destra nella mappa (come si vede in
 \[
 d = 2r \arcsin \left( \sqrt{ \sin^2 \left( \frac{\phi_2 - \phi_1}{2} \right) + \cos(\phi_1)\cos(\phi_2)\sin^2 \left( \frac{\lambda_2 - \lambda_1}{2} \right) } \right)
 \]
-Al suo interno si troveranno i seguenti dati:ù
+Al suo interno si troveranno i seguenti dati:
 \begin{itemize}
   \item Il raggio della terra ($r$).
   \item Le latitudini dei due punti ($\phi_1$ e $\phi_2$).
@@ -1243,16 +1243,56 @@ Al suo interno si troveranno i seguenti dati:ù
 \end{itemize}
 Questa equazione matematica viene utilizzata per calcolare la distanza minima tra due coordinate presenti sul globo, tenendo conto della curvatura terrestre e assicurando una percentuale di errore minore allo 0,1\% sulle lunghe distanze.
 
+L'ultima informazione visibile nella sezione dedicata alla mappa rimane la velocità dell'atleta durante l'attività. Per scartare latenze, rumori o errori relativi al segnale GPS, il sistema utilizza un filtro particolare. Tramite esso verranno scartati i pacchetti GPS con un'incertezza troppo alta e spostamenti troppo piccoli (circa un metro) sintomi di rumore. Per ottenere un valore a schermo più leggibile e meno discontinuo, il sistema eviterà di mostrare direttamente la velocità grezza, procedendo ad una mitigazione che consisterà nella fusione al 70\% della velocità registrata nel secondo precedente con la velocità attuale.
+
+\begin{lstlisting}[language=Java, caption={Filtro anti rumore e mitigazione della velocità.}, label={gps_filtri}]
+function onGpsUpdate(data) {
+  const dtSec = //Differenza di tempo dall'ultimo punto
+  const stepM = //Distanza dall'ultimo punto
+
+  //Filtro accuratezza/rumore
+  const distOk = (data.acc <= 60) && (stepM >= 0.93);
+  const usedStepM = distOk ? stepM : 0;
+
+  let speedKmh = prevSample.speedKmh;
+
+  //Fusione 70% velocita' precedente 30% attuale
+  if (stepM >= 0.20 && data.acc <= 60) {
+    const instantSpeed = (stepM / dtSec) * 3.6;
+    speedKmh = (prevSample.speedKmh * 0.7) + (instantSpeed * 0.3);
+  } else {
+    //Azzeramento progressivo della velocita' (decelerazione)
+    speedKmh = prevSample.speedKmh * 0.85; 
+  }
+}
+\end{lstlisting}
+
+L'ultima sezione consultabile all'interno della dashboard web è interamente dedicata ai dati RAW provenienti dalla sensoristica hardware. A differenza delle sezioni precedenti, che elaboravano i dati per fornire indicatori complessi, in questo ambiente i dati vengono mostrati senza alcun tipo di filtro, smoothing o arrotondamento matematico.
+L'unica normalizzazione attuata consiste in un'intercettazione  delle stringhe JSON per uniformarne la nomenclatura, risolvendo eventuali errori dovuti alla nominazione di default. Questa sezione della dashboard è stata progettata specificamente per utenti esperti: data scientist, biomeccanici, sviluppatori e ricercatori. Avendo accesso al flusso di dati RAW a frequenze così elevate si possono infatti effettuare analisi profonde. Un operatore esperto potrà sfruttare questo pannello in molti modi come per esempio confermare l'orientamento degli assi durante una calibrazione oppure studiare i rumori introdotti dai sensori.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.80\textwidth]{assets/raw.png}
+  \caption{Sezione della dashboard web dedicata ai dati RAW.}
+  \label{raw}
+\end{figure}
+
+
+
 \section{Esempi d'uso}
+L'applicazione mobile e la dashboard web sono state testate sul campo durante il tracciamento di una professionista e di un amatore del roller skating. I test si sono tenuti presso lo Skating Club Comina a Pordenone, in una pista all'aperto dedicata per l'appunto al pattinaggio su rotelle. Come prima cosa, a turno, sono stati montati sugli atleti i seguenti sensori:
+\begin{itemize}
+  \item Un cardio-frequenzimetro a fascia per la misurazione del battito cardiaco direttamente sul petto.
+  \item Un dispositivo Sensoria Core montato esattamente sopra del ginocchio, rivolto per avanti.
+  \item Un dispositivo Sensoria Core montato esattamente sotto al ginocchio, rivolto anch'esso per avanti.
+  \item Due dispositivi Sensoria Socks.
+\end{itemize}
+Terminato il montaggio dei sensori, è stato consegnato agli atleti uno smartphone con l'applicazione per il monitoraggio installata. Una volta aperta l'applicazione gli atleti sono stati guidati passo passo alla creazione del loro profilo per poi connettere tutti i sensori disponibili. Verificata la connessione ..........
 
+\chapter{Conclusioni e futuri sviluppi}
+Risultati raggiunti
+Proposta di eventuali migliorie future.
 
-%% Fine dei capitoli normali, inizio dei capitoli-appendice (opzionali)
-\appendix
-
-%\part{Appendici}
-
-\chapter{Titolo della prima appendice}
-Sed purus libero, vestibulum ut nibh vitae, mollis ultricies augue. Pellentesque velit libero, tempor sed pulvinar non, fermentum eu leo. Duis posuere eleifend nulla eget sagittis. Nam laoreet accumsan rutrum. Interdum et malesuada fames ac ante ipsum primis in faucibus. Curabitur eget libero quis leo porttitor vehicula eget nec odio. Proin euismod interdum ligula non ultricies. Maecenas sit amet accumsan sapien.
 
 %% Parte conclusiva del documento; tipicamente per riassunto, bibliografia e/o indice analitico.
 \backmatter
@@ -1265,8 +1305,6 @@ Sed purus libero, vestibulum ut nibh vitae, mollis ultricies augue. Pellentesque
 \bibliographystyle{plain_\languagename}%% Carica l'omonimo file .bst, dove \languagename è la lingua attiva.
 %% Nel caso in cui si usi un file .bib (consigliato)
 \bibliography{thud}
-%% Nel caso di bibliografia manuale, usare l'environment thebibliography.
 
-%% Per l'indice analitico, usare il pacchetto makeidx (o analogo).
 
 \end{document}
