@@ -19,6 +19,7 @@
 \usepackage{subcaption}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{float}
 
 \lstdefinelanguage{dart}{
   keywords={
@@ -95,7 +96,7 @@ I risultati ottenuti confermano la validità delle scelte progettuali. L'applica
 Questa tesi ha lo scopo di illustrare in dettaglio ogni fase dello sviluppo del sistema di monitoraggio proposto. Nei capitoli successivi, verrà esposto il problema principale affrontato con un confronto tra le soluzioni attualmente disponibili sul mercato, per poi proseguire con i requisiti tecnici e funzionali necessari allo sviluppo e le scelte progettuali implementate. Successivamente saranno inoltre trattati gli aspetti legati all’integrazione dei sensori, all’architettura dell’applicazione mobile e della dashboard web, con porzioni di codice opportunamente commentate, per comprendere al meglio le scelte progettuali attuate, verranno inseriti screenshot per mostrare i diversi casi d’uso. Infine, si presenteranno i risultati ottenuti, le possibili limitazioni e le opportunità di miglioramento e ottimizzazione del sistema per futuri sviluppi.
 \chapter{Il problema}
 \section{Esposizione del problema}
-Nel contesto dell'attività sportiva moderna, l'analisi dei movimenti degli atleti risulta ormai indispensabile per correggere e migliorare notevolmente le abilità dell'agonista o dell'amatore. La raccolta dati tramite dispositivi di sensoristica sempre più avanzati, evidenzia quanto sia effettivamente critico il monitoraggio per evitare infortuni e per migliorare le performance.
+Nel contesto dell'attività sportiva moderna, l'analisi dei movimenti degli atleti risulta ormai indispensabile per correggere e migliorare notevolmente le abilità dell'agonista o del neofita. La raccolta dati tramite dispositivi di sensoristica sempre più avanzati, evidenzia quanto sia effettivamente critico il monitoraggio per evitare infortuni e per migliorare le performance.
 
 \begin{figure}[htbp]
 \centering
@@ -107,7 +108,7 @@ Nel contesto dell'attività sportiva moderna, l'analisi dei movimenti degli atle
 \caption{Confronto fra adozione di sensori wearable e performance nelle maratone.}
 \label{fig:tabular}
 \end{figure}
-Come possiamo osservare a sinistra della figura \ref{fig:tabular}, all'inizio del 2010, gli sportivi, agonisti e non, che utilizzavano nei loro allenamenti dei sensori indossabili erano una piccolissima porzione rispetto al totale degli atleti. Infatti si parla di solamente un 2\%, secondo una stima basata su un'analisi di mercato dei fitness tracker in Nord America \cite{fortune2025wearables} e un'altra analisi di mercato in tutto il mondo \cite{grandview2024}.
+Come si può osservare a sinistra della figura \ref{fig:tabular}, all'inizio del 2010, gli sportivi, agonisti e non, che utilizzavano nei loro allenamenti dei sensori indossabili erano una piccolissima porzione rispetto al totale degli atleti. Infatti si parla di solamente un 2\%, secondo una stima basata su un'analisi di mercato dei fitness tracker in Nord America \cite{fortune2025wearables} e un'altra analisi di mercato in tutto il mondo \cite{grandview2024}.
 Cinque anni dopo, nel 2015, si è osservato un incremento significativo nell'adozione dei sensori wearable, secondo anche un utile sondaggio effettuato fra gli allenatori americani \cite{luczak2020coaches}. Nel 2020 avvenne l'incremento più sostanzioso, portando più della metà degli atleti a utilizzare sensori durante i loro allenamenti per migliorare le prestazioni ed evitare infortuni dovuti a scorretti movimenti o appoggi. Ad oggi si stima che circa l'85\% di tutti gli atleti mondiali utilizzino sensori wearable per il monitoraggio avanzato durante le loro attività.
 
 Proseguendo con l'analisi del secondo grafico, generato utilizzando i dati del World Athletics Database \cite{camminady2023wa}\footnote{Il World Athletics Database è una collezione di dati presente su GitHub con numerosi risultati di varie discipline sportive riguardanti l'atletica} possiamo invece notare come negli anni, sempre partendo dal 2010 e arrivando ad oggi, i tempi mediani con cui i maratoneti portavano a termine la loro corsa sono diminuiti considerevolmente, partendo da circa 129 minuti, arrivando a 127 negli ultimi anni, delineando un trend decrescente, che ci indica dunque come gli atleti riescano a mantenere una velocità più alta durante tutta la maratona, permettendogli di ottenere delle performance ottimali\footnote{Il picco negativo registrato nel 2020, è dovuto all'annullamento della maggior parte delle gare a causa del Covid-19, permettendo solo a professionisti di altissimo livello, la partecipazione ad una scarsa quantità di eventi}. L'analisi della maratona risulta migliore, per comprendere al meglio quanto sia effettivamente efficace l'utilizzo dei sensori wearable durante gli allenamenti, rispetto all'analisi di una corsa più breve, poiché in un tratto di pista maggiore l'atleta dovrà sforzarsi per più tempo a mantenere una postura corretta, un appoggio del piede costantemente equilibrato e un movimento delle articolazioni coordinato, gli permetterà dunque di accumulare vantaggio data la lunga durata della gara. Questo miglioramento di performance risulterebbe minimo, se non nullo, in una gara così breve come i cento metri ad esempio, la cui ridotta lunghezza non consentirebbe all'atleta di accumulare vantaggio correggendo costantemente i suoi errori. L'altro vantaggio molto importante da considerare è sicuramente quello della prevenzione infortuni: in molti sport si osserva che, per sovraccarichi muscolari o appoggi squilibrati, si vanno a generare delle lesioni talvolta anche molto gravi negli atleti, costretti poi a dover intraprendere un percorso di riabilitazione. Secondo uno studio \cite{barca_innovationhub_2025} tenuto dal centro medico sportivo del famoso club calcistico Barcellona, l'integrazione di dati biometrici e fisici raccolti attraverso sensori wearable, riescono ad anticipare e predire segnali di rischio infortunio, evitando così che l'atleta possa farsi del male, compromettendo la sua salute.
@@ -120,6 +121,9 @@ Proseguendo con l'analisi del secondo grafico, generato utilizzando i dati del W
 \end{figure}
 Questo viene anche confermato dal grafico in figura \ref{Infortuni_Barcellona}, costruito basandosi sul dataset di Transfermarkt \cite{transfermarkt2023injuries}. Analizzando il grafico, notiamo come nel 2021, nel Barcellona si fosse registrato il maggior numero di infortuni per stagione. A seguito dell'adozione di sensoristica moderna e allenamenti mirati alla prevenzione di infortuni, come citato dal Barça Innovation Hub \cite{barca2021wearables}, il numero di infortuni diminuì notevolmente, rendendo profittevole l'investimento sulla sensoristica. Un altro importante studio
 tenuto da Preatoni Ezio \cite{preatoni2022wearables} evidenzia come le tecnologie sensoristiche indossabili (e.g. accelerometri o giroscopi) riescano a registrare dei dati che consentano la successiva identificazione di alterazioni di movimento o di carichi di lavoro, associati al rischio di infortunio. 
+Un'ulteriore disciplina interessata dall'utilizzo dei sensori wearables per la prevenzione degli infortuni e il miglioramento delle prestazione è il roller skating.
+Nel pattinaggio su rotelle la criticità più grande è rappresentata dall'elevata ciclicità del gesto e dalla natura asimmetrica della disciplina che espone gli atleti a un rischio significativo di infortuni non traumatici da sovraccarico (overuse injuries). Le statistiche indicano che circa il 20\% degli atleti professionisti subisce almeno un infortunio da sovraccarico durante una singola stagione agonistica, con conseguenze spesso debilitanti sulla carriera a causa dei lunghi tempi di recupero (\cite{emery2001groin}). È importante sottolineare anche la criticità biomeccanica derivata dal design dei circuiti di gara. Sia nelle piste indoor che nei circuiti stradali a "short track", le curve vengono percorse esclusivamente in senso antiorario. Questa configurazione obbligata induce uno sviluppo muscolare e funzionale asimmetrico tra l'arto destro e l'arto sinistro. Durante la percorrenza delle curve, l'arto destro (esterno) agisce come principale generatore di spinta laterale tramite la tecnica del "crossover", mentre l'arto sinistro (interno) funge da perno stabilizzatore subendo carichi compressivi differenti (\cite{felser2016neuromuscular}).
+Ricerche recenti hanno evidenziato come questa asimmetria si rifletta in pattern di affaticamento differenziati: il muscolo vasto laterale destro tende a mostrare segnali di fatica neuromuscolare più precoci rispetto al sinistro durante test massimali in pista (\cite{konieczny2020gluteus}). Tali squilibri, se non monitorati costantemente, possono alterare la "digital signature" del gesto tecnico dell'atleta, portando a compensazioni disfunzionali che aumentano la suscettibilità alle lesioni muscolo-tendinee (\cite{bongiorno2023emg}).
 
 Un importante studio specifico sul pattinaggio corsa\footnote{Il pattinaggio corsa è una specialità del pattinaggio a rotelle regolamentata a livello internazionale, praticata su piste indoor/outdoor o su strada.} ha analizzato l'efficacia di calze intelligenti dotate di sensori
 piezoelettrici integrati direttamente nelle fibre tessili (posizionati su metatarso mediale, laterale e
@@ -1269,7 +1273,6 @@ function onGpsUpdate(data) {
 
 L'ultima sezione consultabile all'interno della dashboard web è interamente dedicata ai dati RAW provenienti dalla sensoristica hardware. A differenza delle sezioni precedenti, che elaboravano i dati per fornire indicatori complessi, in questo ambiente i dati vengono mostrati senza alcun tipo di filtro, smoothing o arrotondamento matematico.
 L'unica normalizzazione attuata consiste in un'intercettazione  delle stringhe JSON per uniformarne la nomenclatura, risolvendo eventuali errori dovuti alla nominazione di default. Questa sezione della dashboard è stata progettata specificamente per utenti esperti: data scientist, biomeccanici, sviluppatori e ricercatori. Avendo accesso al flusso di dati RAW a frequenze così elevate si possono infatti effettuare analisi profonde. Un operatore esperto potrà sfruttare questo pannello in molti modi come per esempio confermare l'orientamento degli assi durante una calibrazione oppure studiare i rumori introdotti dai sensori.
-
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.80\textwidth]{assets/raw.png}
@@ -1277,25 +1280,100 @@ L'unica normalizzazione attuata consiste in un'intercettazione  delle stringhe J
   \label{raw}
 \end{figure}
 
-
-
 \section{Esempi d'uso}\label{esempi}
-L'applicazione mobile e la dashboard web sono state testate sul campo durante il tracciamento di una professionista e di un amatore del roller skating. I test si sono tenuti presso lo Skating Club Comina a Pordenone, in una pista all'aperto dedicata per l'appunto al pattinaggio su rotelle. Come prima cosa, a turno, sono stati montati sugli atleti i seguenti sensori:
+L'applicazione mobile e la dashboard web sono state testate sul campo durante il tracciamento di una professionista e di un neofita del roller skating. I test si sono tenuti presso lo Skating Club Comina a Pordenone, in una pista all'aperto dedicata per l'appunto al pattinaggio su rotelle. Come prima cosa, a turno, sono stati montati sugli atleti i seguenti sensori:
 \begin{itemize}
   \item Un cardio-frequenzimetro a fascia per la misurazione del battito cardiaco direttamente sul petto.
   \item Un dispositivo Sensoria Core montato esattamente sopra del ginocchio, rivolto per avanti.
   \item Un dispositivo Sensoria Core montato esattamente sotto al ginocchio, rivolto anch'esso per avanti.
   \item Due dispositivi Sensoria Socks.
 \end{itemize}
-Terminato il montaggio dei sensori, è stato consegnato agli atleti uno smartphone con l'applicazione per il monitoraggio installata. Una volta aperta l'applicazione gli atleti sono stati guidati passo passo alla creazione del loro profilo per poi connettere tutti i sensori disponibili. Verificata la connessione dei sensori tramite la variazione di colorazione dell'apposito led, gli atleti hanno avviato l'attività tramite l'apposito bottone. Nel frattempo è stata aperta su un browser la dashboard web per la visualizzazione dei dati, preceduta dall'avvio dello script Python sul server \textit{lambda-iot.uniud.it} per la corretta ricezione dello streaming. Una volta avviata l'attività e completata la calibrazione mantenendo le gambe parallele e distese per cinque secondi, gli atleti hanno effettuato diversi giri del tracciato per raccogliere quante più informazioni possibili. Tutte le attività sono sempre stato seguite in live tramite le apposite sezioni della dashboard che rilevavano reattivamente gli spostamenti degli atleti, i loro battiti cardiaci, gli angoli di flessione e ulteriori indicatori. Terminati i giri di monitoraggio gli atleti sono tornati al punto di partenza terminando l'attività tramite l'apposito tasto in app. Le attività sono poi state salvate tramite la terminazione dello script Python verificandone la loro effettiva presenza nella lista dei log.
+Terminato il montaggio dei sensori, è stato consegnato agli atleti uno smartphone con l'applicazione per il monitoraggio installata. Una volta aperta l'applicazione gli atleti sono stati guidati passo passo alla creazione del loro profilo per poi connettere tutti i sensori disponibili. Verificata la connessione dei sensori tramite la variazione di colorazione dell'apposito led, gli atleti hanno avviato l'attività tramite l'apposito bottone. Nel frattempo è stata aperta su un browser la dashboard web per la visualizzazione dei dati, preceduta dall'avvio dello script Python sul server \textit{lambda-iot.uniud.it} per la corretta ricezione dello streaming. Una volta avviata l'attività e completata la calibrazione mantenendo le gambe parallele e distese per cinque secondi, gli atleti hanno effettuato diversi giri del tracciato per raccogliere quante più informazioni possibili. Tutte le attività sono sempre stato seguite in live tramite le apposite sezioni della dashboard che rilevavano reattivamente gli spostamenti degli atleti, i loro battiti cardiaci, gli angoli di flessione e ulteriori indicatori. Terminati i giri di monitoraggio gli atleti sono tornati al punto di partenza terminando l'attività tramite l'apposito tasto in app. Le attività sono poi state salvate tramite la terminazione dello script Python verificandone la loro effettiva presenza nella lista dei log. I risultati ottenuti si sono rilevati molto significativi esponendo:
+\begin{itemize}
 
-//parte dottore
+  \item Cinematica del ginocchio: il neofita ha riportato una flessione media del ginocchio di 10° con picchi di 40°. L'atleta professionista ha riportato una flessione media di 30° con picchi di 80°.
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{assets/ginocchio amatore.jpeg}
+    \caption{Angolo di flessione del ginocchio (neofita).}
+    \label{ginocchia_neo}
+  \end{figure}
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{assets/ginocchio professionista.jpeg}
+    \caption{Angolo di flessione del ginocchio (professionista).}
+    \label{ginocchia_pro}
+  \end{figure}
 
-\chapter{Conclusioni e futuri sviluppi} (1-2 pagine)
-Nel progetto discusso dalla presente tesi, è stato finalizzato un sistema di monitoraggio che permette l'analisi dei dati raccolti durante attività sportive, nella fattispecie durante il roller skating. I risultati ottenuti in fase successiva all'analisi post-attività hanno permesso di rispondere alla domanda principale posta inizialmente, ovvero se sia possibile prevenire infortuni e migliorare le prestazioni degli atleti tramite l'utilizzo di sensori wearables tracciati da apposite applicazioni. La sostanziosa differenza evidenziata dai grafici presenti nel capitolo \ref{esempi} testimonia infatti quanto un amatore possa migliorare a livello di movimenti e bilanciamenti del peso per ottenere dei risultati migliori avvicinandosi a tempi di percorrenza sempre più simili a quelli di un professionista. 
+  \item Bongiorno Index (BI): il Bongiorno index medio del neofita è del 15\% a destra e del 20\% a sinistra. L'atleta professionista ha registrato valori dell'80\% a sinistra e di 70\% a destra.
+  \begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{assets/bi amatore.jpeg}
+      \par\smallskip(a) Neofita.
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{assets/bi professionista.jpeg}
+      \par\smallskip(b) Professionista.
+    \end{minipage}
+    \caption{Variazioni del Bongiorno Index.}
+    \label{bi_pro_neo}
+  \end{figure}
+
+  \item Angolo di inclinazione della tibia: per convenzione i valori positivi indicavano una inclinazione verso l'interno rispetto alla posizione verticale della tibia e negativi una inclinazione verso l'esterno. L'atleta professionista ha riportato sull'arto destro un angolo della tibia di 20° verso l'esterno in fase di spinta e di 35° all'interno in fase di recupero. Sull'arto sinistro l'angolo è stato di 50° verso l'esterno in fase propulsiva e di 30° in fase di recupero. Il neofita ha registrato a destra un angolo di 30° in fase di spinta esterna e di 15° in fase di recupero; a sinistra, l'angolo è stato di 30° in spinta e di 50° in recupero.
+  \begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{assets/tibie amatore.jpeg}
+      \par\smallskip(a) Neofita.
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.49\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{assets/tibie professionista.jpeg}
+      \par\smallskip(b) Professionista.
+    \end{minipage}
+    \caption{Variazioni dell'angolo di inclinazione delle tibie.}
+    \label{tibie_pro_neo}
+  \end{figure}
+
+  \item Pressioni plantari: nel professionista, sul piede destro la spinta inizia dal tallone subito dopo l'appoggio, con la pressione che si sposta rapidamente verso il quinto e il primo metatarsale. Il distacco da terra avviene prima con il tallone e poi con l'avampiede, dopo una breve spinta laterale. Sul piede sinistro l'appoggio è più uniforme: i tre punti di carico aumentano quasi contemporaneamente, e anche nella fase di recupero il movimento parte dal tallone, seguito leggermente dopo dall'avampiede.
+  Nel neofita, sul piede destro il tallone svolge una fase iniziale di stabilizzazione, poi la spinta coinvolge tallone e quinto metatarsale, mentre il primo metatarsale interviene più tardi. In recupero, è l'avampiede mediale a sollevarsi per primo, seguito dal laterale e infine dal tallone. Sul piede sinistro la spinta è più omogenea tra i tre punti di appoggio, con un leggero anticipo del tallone; nel recupero il movimento parte dal tallone con un piccolo picco pressorio preparatorio, seguito dall'avampiede, inizialmente mediale e poi laterale.
+  \begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{assets/pressioni neo.png}
+      \par\smallskip(a) Neofita.
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{assets/pressioni pro.png}
+      \par\smallskip(b) Professionista.
+    \end{minipage}
+    \caption{Variazioni delle pressioni plantari.}
+    \label{pressioni_pro_neo}
+  \end{figure}
+
+  \item Frequenza cardiaca e velocità: l'atleta professionista ha registrato una frequenza cardiaca di 110 bpm a una velocità di percorrenza di 26 km/h. Il neofita ha registrato una frequenza cardiaca di 90 bpm a una velocità di percorrenza di 22 km/h.
+\end{itemize}
+
+\chapter{Conclusioni e futuri sviluppi}
+Nel progetto discusso dalla presente tesi, è stato finalizzato un sistema di monitoraggio che permette l'analisi dei dati raccolti durante attività sportive, nella fattispecie durante il roller skating. I risultati ottenuti in fase successiva all'analisi post-attività hanno permesso di rispondere alla domanda principale posta inizialmente, ovvero se fosse possibile prevenire infortuni e migliorare le prestazioni degli atleti tramite l'utilizzo di sensori wearables connessi ad apposite applicazioni per il controllo dei parametri. La sostanziosa differenza evidenziata dai grafici presenti nel capitolo \ref{esempi} testimonia infatti quanto sia ampio il margine di miglioramento di un neofita riguardo i movimenti e bilanciamenti del peso. Con vari accorgimenti e correzioni si potrebbero infatti ottenere dei risultati migliori avvicinandosi a dei tempi di percorrenza sempre più brevi e simili a quelli di un professionista. Per quanto riguardo l'evitamento di infortuni, la dashboard è risultata indispensabile per:
+\begin{enumerate}
+  \item Verificare eventuali sbilanciamenti di peso, tramite i grafici delle pressioni plantari, per evidenziare instabilità che se costanti potrebbero portare a infortuni.
+  \item Controllare il corretto angolo di flessione del ginocchio per abbassare il baricentro riducendo il carico sulle articolazioni e prevenendo cadute o lesioni.
+  \item Evidenziare l'eventuale assenza di parallelismo fra gli angoli di inclinazione delle tibie, indicante valgismo (piegamento interno del ginocchio) o varismo (piegamento esterno del ginocchio) che porterebbero ad una perdita di prestazioni dell'atleta causando anche un rischio maggiore di infortunio dovuto a torsioni dannose.
+  \item Analizzare i Bongiorno Index per valutare l'efficienza di ogni pattinata in base a quanto laterale essa sia, facendo risaltare quanta potenziale energia viene persa con una pattinata non ottimale.
+\end{enumerate} 
 
 
-Proposta di eventuali migliorie future.
+Proposta di eventuali migliorie future....
 
 
 %% Parte conclusiva del documento; tipicamente per riassunto, bibliografia e/o indice analitico.
