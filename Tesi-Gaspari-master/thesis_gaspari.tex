@@ -43,13 +43,16 @@
 \maketitle
 
 \begin{dedication}
-    Dedica da scrivere
-
+    A chi mi ha insegnato a crederci, \\
+    anche quando non ero capace di farlo da solo.
 \end{dedication}
 
 \acknowledgements
-Ringraziamenti da scrivere.
+Desidero esprimere la mia gratitudine al Professor Ivan Scagnetto, per la disponibilità, la guida e la chiarezza con cui ha saputo orientare il lavoro durante tutto il percorso di ricerca e sviluppo del progetto. La sua competenza e il suo costante supporto hanno rappresentato un riferimento fondamentale durante la realizzazione di questa tesi.
 
+Un sentito ringraziamento va anche al Dottor Luca Miceli, per i preziosi feedback ricevuti durante le fasi di test, per aver fornito sempre un confronto puntuale e costruttivo, contribuendo in modo significativo alla qualità del progetto e mettendo altresì a disposizione tutte le componenti necessarie.
+
+Ringrazio inoltre la Dottoressa Giulia Bongiorno per l’attenzione e la disponibilità con cui ha reso possibile lo svolgimento dei test necessari. I suoi studi, che ho avuto modo di citare all’interno della tesi, hanno rappresentato un importante punto di riferimento teorico e hanno arricchito in modo sostanziale il quadro concettuale della ricerca.
 
 %% Indice
 \tableofcontents
@@ -1280,7 +1283,7 @@ L'unica normalizzazione attuata consiste in un'intercettazione  delle stringhe J
   \label{raw}
 \end{figure}
 
-\section{Esempi d'uso}\label{esempi}
+\section{Fase sperimentale}\label{esempi}
 L'applicazione mobile e la dashboard web sono state testate sul campo durante il tracciamento di una professionista e di un neofita del roller skating. I test si sono tenuti presso lo Skating Club Comina a Pordenone, in una pista all'aperto dedicata per l'appunto al pattinaggio su rotelle. Come prima cosa, a turno, sono stati montati sugli atleti i seguenti sensori:
 \begin{itemize}
   \item Un cardio-frequenzimetro a fascia per la misurazione del battito cardiaco direttamente sul petto.
@@ -1370,9 +1373,10 @@ Nel progetto discusso dalla presente tesi, è stato finalizzato un sistema di mo
   \item Controllare il corretto angolo di flessione del ginocchio per abbassare il baricentro riducendo il carico sulle articolazioni e aumentando il tempo durante il quale applicare la forza lungo l'asse laterale.
   \item Evidenziare la parziale assenza di parallelismo fra gli angoli di inclinazione delle tibie nel neofita, importante fattore di rischio per infortuni agli adduttori.
   \item Analizzare i Bongiorno Index per valutare l'efficienza di ogni pattinata in base a quanto forte sia la spinta laterale, facendo risaltare la potenziale energia che il neofita perde con una pattinata orientata in senso più antero-posteriore.
+  \item Monitorare il battito cardiaco e la velocità degli atleti nelle varie zone del percorso, per evidenziare ancora una volta le differenze fra neofita e professionista, notando come quest'ultimo riesca a gestire in maniera più controllata lo sforzo in relazione alla performance. 
 \end{enumerate} 
 
-Eventuali migliorie implementabili in futuro potrebbero comprendere funzionalità per...
+Eventuali migliorie implementabili in futuro potrebbero comprendere funzionalità per la visualizzazione in tempo reale e in replay di grafici dedicati a Bongiorno Index, angoli delle tibie e angoli del ginocchio, fornendo così un feedback immediato per far comprendere al meglio anche il confronto con lo storico dati, similarmente a quanto fatto con le pressioni plantari. Un'ulteriore feature potrebbe aggiungere alla dashboard un controllo sulla calibrazione insieme ad un countdown di cinque secondi per verificare al 100\% che l'atleta, durante tutto il breve periodo di taratura, rimanga completamente fermo a gambe tese e parallele. A livello di salvataggio dati, si potrebbe modificare la nomenclatura dei log in modo che autonomamente essi vengano intitolati con il nome dell'atleta e la data in cui l'attività è stata registrata, estraendoli dal log stesso oppure ricevendoli dall'app. A livello di applicazione, un'implementazione utile sviluppabile in futuro potrebbe comprendere l'ampliamento dei tipi di sensori supportati per il monitoraggio, permettendo così ad una più vasta gamma di atleti e allenatori di poter utilizzare il sistema senza dover per forza spendere grandi cifre per sensoristica avanzata. Come ultima funzionalità da poter inserire, si potrebbe pensare ad un feedback per l'atleta tramite auricolare bluetooth, in modo che l'applicazione autonomamente analizzi i dati ricevuti e dia indicazioni riguardanti la flessione del ginocchio, il mantenimento del parallelismo fra le tibie, la percentuale di spinta laterale e il bilanciamento delle pressioni plantari (mantenendo comunque un certo margine di errore).
 
 %% Parte conclusiva del documento; tipicamente per riassunto, bibliografia e/o indice analitico.
 \backmatter
